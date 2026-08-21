@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdventureWorks</title>
+</head>
+<body>
+    <header>
+        <section class="login-header">
+            <h1>AdventureWorks</h1>
+        </section>
+    </header>
+    <section class="container">
+        <!-- FORMULARIO DE LOGIN -->
+        <section class="container-form">
+            <form class="sign-in">
+                <h2>Iniciar Sesión</h2>
+                <section class="social-networks">
+                    <a href="https://instagram.com" target="_blank">
+                        <ion-icon name="logo-instagram"></ion-icon>
+                    </a>
+                    <a href="https://facebook.com" target="_blank">
+                        <ion-icon name="logo-facebook"></ion-icon>
+                    </a>
+                    <a href="https://twitter.com" target="_blank">
+                        <ion-icon name="logo-twitter"></ion-icon>
+                    </a>
+                    <a href="https://tiktok.com" target="_blank">
+                        <ion-icon name="logo-tiktok"></ion-icon>
+                    </a>
+                </section>
+                <span>use su correo y contraseña</span>
+                <section class="container-input">
+                    <ion-icon name="mail-outline"></ion-icon>
+                    <input type="email" id="login-email" placeholder="Email">
+                </section>
+                <section class="container-input">
+                    <ion-icon name="lock-closed-outline"></ion-icon>
+                    <input type="password" id="login-password" placeholder="Contraseña">
+                </section>
+                <a href="#">¿Olvidaste tu contraseña?</a>
+                <button class="button" type="button" id="btn-login">Iniciar Sesión</button>
+            </form>
+        </section>
+        <!-- FORMULARIO DE REGISTRO -->
+        <section class="container-form">
+            <form class="sign-up">
+                <h2>Registrarse</h2>
+                <section class="social-networks">
+                    <a href="https://instagram.com" target="_blank">
+                        <ion-icon name="logo-instagram"></ion-icon>
+                    </a>
+                    <a href="https://facebook.com" target="_blank">
+                        <ion-icon name="logo-facebook"></ion-icon>
+                    </a>
+                    <a href="https://twitter.com" target="_blank">
+                        <ion-icon name="logo-twitter"></ion-icon>
+                    </a>
+                    <a href="https://tiktok.com" target="_blank">
+                        <ion-icon name="logo-tiktok"></ion-icon>
+                    </a>
+                </section>
+                <span>use su correo electrónico para registrarse</span>
+                <section class="container-input">
+                    <ion-icon name="person-outline"></ion-icon>
+                    <input type="text" id="registro-nombre" placeholder="Nombre">
+                </section>
+                <section class="container-input">
+                    <ion-icon name="mail-outline"></ion-icon>
+                    <input type="email" id="registro-correo" placeholder="Email">
+                </section>
+                <section class="container-input">
+                    <ion-icon name="lock-closed-outline"></ion-icon>
+                    <input type="password" id="registro-password" placeholder="Contraseña">
+                </section>
+                <button class="button" type="button" id="btn-registro">Registrarse</button>
+            </form>
+        </section>
+        <section class="container-welcome">
+            <section class="welcome-sign-up welcome">
+                <h3>Bienvenido a AdventureWorks</h3>
+                <p>Regístrate para disfrutar de nuestra experiencia</p>
+                <button class="button" id="btn-sign-up">Registrarse</button>
+            </section>
+            <section class="welcome-sign-in welcome">
+                <h3>Bienvenido de nuevo</h3>
+                <p>Inicia sesión para continuar</p>
+                <button class="button" id="btn-sign-in">Iniciar Sesión</button>
+            </section>
+        </section>
+    </section>
+    <script src="../components/animaciones.js" defer></script>
+    <script type="module"
+        src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js">
+    </script>
+    <script nomodule
+        src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js">
+    </script>
+    <footer>
+        <section class="footer-content">
+            <h2>Contacto</h2>
+            <p>AdventureWorks</p>
+            <p>Calle 123 #45-67, Bogotá, Colombia</p>
+            <p>
+                Teléfono:
+                <a href="tel:+5712345678">(+57) 1 234 5678</a>
+            </p>
+            <p>
+                Celular:
+                <a href="tel:+573001234567">(+57) 300 123 4567</a>
+            </p>
+            <p>
+                Correo:
+                <a href="mailto:contacto@coldbyte.com">
+                    AdventureWorks@gmail.com
+                </a>
+            </p>
+            <h2>Redes Sociales</h2>
+            <section class="social-links">
+                <a href="https://instagram.com" target="_blank">
+                    <ion-icon name="logo-instagram"></ion-icon>
+                </a>
+                <a href="https://facebook.com" target="_blank">
+                    <ion-icon name="logo-facebook"></ion-icon>
+                </a>
+                <a href="https://twitter.com" target="_blank">
+                    <ion-icon name="logo-twitter"></ion-icon>
+                </a>
+                <a href="https://tiktok.com" target="_blank">
+                    <ion-icon name="logo-tiktok"></ion-icon>
+                </a>
+            </section>
+            <p class="copy">
+                © 2026 AdventureWorks - Todos los derechos reservados.
+            </p>
+        </section>
+    </footer>
+</body>
+</html>
