@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Productos - AdventureWorks</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/catalogo.css">
+  <link rel="stylesheet" href="/css/footer.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <%- include('../../components/navbar.ejs') %>
+
+  <main class="main-container">
+
+    <!-- ENCABEZADO -->
+    <header class="catalog-header">
+      <h2>Catálogo de Productos</h2>
+      <p>Explora la lista de productos disponibles en el sistema.</p>
+    </header>
+
+    <!-- PRODUCTOS -->
+    <div class="grid-productos">
+
+      <% productos.forEach(producto => { %>
+
+        <article class="card-producto">
+
+          <!-- IMAGEN -->
+          <div class="card-img-container">
+            <% if (producto.imagenUrl) { %>
+              <img src="<%= producto.imagenUrl %>" alt="<%= producto.Name %>" class="product-img" loading="lazy">
+            <% } else { %>
+              <div class="producto-sin-imagen">
+                <span>Sin fotografía</span>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- CABECERA -->
+          <div class="card-header">
+            <span class="product-id">ID: #<%= producto.ProductID %></span>
+            <span class="product-color"><%= producto.Color || 'Sin color' %></span>
+          </div>
+
+          <!-- INFORMACIÓN -->
+          <div class="card-body">
+            <h3 class="product-title"><%= producto.Name %></h3>
+            <p class="product-code">
+              <strong>Código:</strong> <%= producto.ProductNumber %>
+            </p>
+          </div>
+
+          <!-- PRECIO Y ACCIONES -->
+          <div class="card-footer">
+            <span class="product-price">
+              $<%= Number(producto.ListPrice).toFixed(2) %>
+            </span>
+
+            <div class="card-actions">
+              <button type="button" class="btn-detalles">Ver detalle</button>
+              
+              <form action="/carrito/agregar" method="POST" class="form-agregar">
+                <input type="hidden" name="productId" value="<%= producto.ProductID %>">
+                <button type="submit" class="btn-carrito" title="Añadir al carrito">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8" cy="21" r="1"></circle>
+                    <circle cx="19" cy="21" r="1"></circle>
+                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                  </svg>
+                  <span>Añadir</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
+        </article>
+
+      <% }); %>
+
+    </div>
+
+    <!-- PAGINACIÓN -->
+    <div class="paginacion-container">
+
+      <% if (paginaActual > 1) { %>
+        <a href="/catalogo?pagina=<%= paginaActual - 1 %>" class="btn-pagina">&laquo; Anterior</a>
+      <% } else { %>
+        <span class="btn-pagina deshabilitado">&laquo; Anterior</span>
+      <% } %>
+
+      <span class="pagina-info">
+        Página <strong><%= paginaActual %></strong> de <strong><%= totalPaginas %></strong>
+      </span>
+
+      <% if (paginaActual < totalPaginas) { %>
+        <a href="/catalogo?pagina=<%= paginaActual + 1 %>" class="btn-pagina">Siguiente &raquo;</a>
+      <% } else { %>
+        <span class="btn-pagina deshabilitado">Siguiente &raquo;</span>
+      <% } %>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <%- include('../../components/footer.ejs') %>
+
+</body>
+</html>

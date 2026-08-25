@@ -1,15 +1,120 @@
+require('dotenv').config();
+
 const express = require('express');
+const path = require('path');
+
+const CatalogoController =
+    require('./controllers/catalogoController');
+
+const AuthController =
+    require('./controllers/authController');
+
 const app = express();
-const PORT = 3000;
 
-// Esto permite que el backend entienda los datos JSON que envíe el frontend
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// Ruta de prueba para saber si el framework funciona
-app.get('/', (req, res) => {
-    res.send('¡El servidor de Express está funcionando perfectamente!');
-});
 
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+// =====================================================
+// ARCHIVOS ESTÁTICOS
+// =====================================================
+
+app.use(
+    express.static(
+        path.join(__dirname, '../frontend')
+    )
+);
+
+app.use(
+    '/components',
+    express.static(
+        path.join(__dirname, '../components')
+    )
+);
+
+
+// =====================================================
+// EJS
+// =====================================================
+
+app.set(
+    'view engine',
+    'ejs'
+);
+
+app.set(
+    'views',
+    path.join(
+        __dirname,
+        '../frontend/html'
+    )
+);
+
+
+// =====================================================
+// RUTA CATÁLOGO
+// =====================================================
+
+app.get(
+    '/catalogo',
+    CatalogoController.mostrarCatalogo
+);
+
+
+// =====================================================
+// RUTAS DE AUTENTICACIÓN
+// =====================================================
+
+app.post(
+    '/api/auth/registro',
+    AuthController.registrar
+);
+
+app.post(
+    '/api/auth/login',
+    AuthController.login
+);
+
+app.get(
+    '/login',
+    (req, res) => {
+
+        res.sendFile(
+            path.join(__dirname, '../frontend/html/login.html')
+        );
+
+    }
+);
+
+
+// =====================================================
+// RUTA PRINCIPAL
+// =====================================================
+
+app.get(
+    '/',
+    (req, res) => {
+
+        res.redirect('/login');
+
+    }
+);
+
+
+// =====================================================
+// SERVIDOR
+// =====================================================
+
+const PORT =
+    process.env.PORT || 3000;
+
+app.listen(
+    PORT,
+    () => {
+
+        console.log(
+            `Servidor corriendo en http://localhost:${PORT}`
+        );
+
+    }
+);

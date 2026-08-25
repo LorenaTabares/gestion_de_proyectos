@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+    <rect width="800" height="600" fill="#f8fafc"></rect>
+
+    <g fill="none" stroke="#cbd5e1" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="275" cy="400" r="90"></circle>
+
+        <circle cx="525" cy="400" r="90"></circle>
+
+        <path d="M275 400 L350 260 L425 400 Z"></path>
+
+        <path d="M350 260 L525 400"></path>
+
+        <path d="M350 260 L315 220"></path>
+
+        <path d="M425 400 L455 220"></path>
+    </g>
+
+    <text x="400" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#64748b" font-weight="600">
+        IMAGEN NO DISPONIBLE
+    </text>
+
+    <text x="400" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#94a3b8">
+        AdventureWorks
+    </text>
+</svg>
