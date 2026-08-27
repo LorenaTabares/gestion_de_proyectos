@@ -1,0 +1,282 @@
+```html
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Carrito - AdventureWorks</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+
+    <link rel="stylesheet" href="/css/navbar.css">
+
+    <link rel="stylesheet" href="/css/carrito.css">
+
+    <link rel="stylesheet" href="/css/footer.css">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <%- include('../../components/navbar.ejs') %>
+
+
+    <main class="carrito-container">
+
+        <!-- ENCABEZADO -->
+
+        <header class="carrito-header">
+
+            <h1>Mi carrito</h1>
+
+            <p>
+                Revisa los productos que has agregado a tu carrito.
+            </p>
+
+        </header>
+
+
+        <% if (productos.length === 0) { %>
+
+            <!-- CARRITO VACÍO -->
+
+            <section class="carrito-vacio">
+
+                <div class="carrito-vacio-icono">
+                    🛒
+                </div>
+
+                <h2>Tu carrito está vacío</h2>
+
+                <p>
+                    Agrega productos desde el catálogo para verlos aquí.
+                </p>
+
+                <a href="/catalogo" class="btn-continuar">
+                    Volver al catálogo
+                </a>
+
+            </section>
+
+
+        <% } else { %>
+
+            <!-- CONTENIDO DEL CARRITO -->
+
+            <section class="carrito-contenido">
+
+                <!-- PRODUCTOS -->
+
+                <div class="lista-carrito">
+
+                    <% productos.forEach(producto => { %>
+
+                        <article class="item-carrito">
+
+                            <!-- IMAGEN -->
+
+                            <div class="item-imagen">
+
+                                <% if (producto.ThumbNailPhoto) { %>
+
+                                    <img
+                                        src="data:image/jpeg;base64,<%= Buffer.from(producto.ThumbNailPhoto).toString('base64') %>"
+                                        alt="<%= producto.Name %>"
+                                    >
+
+                                <% } else { %>
+
+                                    <div class="sin-imagen">
+                                        Sin imagen
+                                    </div>
+
+                                <% } %>
+
+                            </div>
+
+
+                            <!-- INFORMACIÓN -->
+
+                            <div class="item-info">
+
+                                <span class="item-id">
+
+                                    ID: #<%= producto.ProductID %>
+
+                                </span>
+
+                                <h2>
+
+                                    <%= producto.Name %>
+
+                                </h2>
+
+                                <p>
+
+                                    Código:
+
+                                    <strong>
+
+                                        <%= producto.ProductNumber %>
+
+                                    </strong>
+
+                                </p>
+
+                            </div>
+
+
+                            <!-- PRECIO -->
+
+                            <div class="item-precio">
+
+                                <span>Precio</span>
+
+                                <strong>
+
+                                    $<%= Number(producto.ListPrice).toFixed(2) %>
+
+                                </strong>
+
+                            </div>
+
+
+                            <!-- CANTIDAD -->
+
+                            <div class="item-cantidad">
+
+                                <span>Cantidad</span>
+
+                                <strong>
+
+                                    <%= producto.cantidad %>
+
+                                </strong>
+
+                            </div>
+
+
+                            <!-- SUBTOTAL -->
+
+                            <div class="item-subtotal">
+
+                                <span>Subtotal</span>
+
+                                <strong>
+
+                                    $<%= Number(producto.subtotal).toFixed(2) %>
+
+                                </strong>
+
+                            </div>
+
+
+                            <!-- ELIMINAR PRODUCTO -->
+
+                            <form
+                                action="/carrito/eliminar"
+                                method="POST"
+                                class="form-eliminar"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="productId"
+                                    value="<%= producto.ProductID %>"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="btn-eliminar"
+                                >
+
+                                Eliminar
+
+                                </button>
+
+                            </form>
+
+
+                        </article>
+
+                    <% }); %>
+
+                </div>
+
+
+                <!-- RESUMEN -->
+
+                <aside class="resumen-carrito">
+
+                    <h2>Resumen del pedido</h2>
+
+                    <div class="resumen-linea">
+
+                        <span>Productos</span>
+
+                        <strong>
+
+                            <%= productos.length %>
+
+                        </strong>
+
+                    </div>
+
+                    <div class="resumen-linea total">
+
+                        <span>Total</span>
+
+                        <strong>
+
+                            $<%= Number(total).toFixed(2) %>
+
+                        </strong>
+
+                    </div>
+
+
+                    <button class="btn-finalizar">
+
+                        Finalizar compra
+
+                    </button>
+
+
+                    <a
+                        href="/catalogo"
+                        class="btn-seguir"
+                    >
+
+                        Seguir comprando
+
+                    </a>
+
+                </aside>
+
+            </section>
+
+        <% } %>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <%- include('../../components/footer.ejs') %>
+
+</body>
+
+</html>
+```

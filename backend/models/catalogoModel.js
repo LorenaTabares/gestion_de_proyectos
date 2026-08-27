@@ -67,6 +67,60 @@ class CatalogoModel {
     }
 
   }
+  
+    // =====================================================
+  // OBTENER UN PRODUCTO POR ID - CARRITO
+  // =====================================================
+
+  static async obtenerProductoPorId(productId) {
+
+    try {
+
+      const pool = await obtenerConexion();
+
+      const result = await pool
+        .request()
+        .input('productId', parseInt(productId))
+        .query(`
+
+          SELECT
+            p.ProductID,
+            p.Name,
+            p.ProductNumber,
+            p.Color,
+            p.ListPrice,
+            p.ProductCategoryID,
+            pc.Name AS CategoryName,
+            p.ThumbNailPhoto,
+            p.ThumbnailPhotoFileName
+
+          FROM SalesLT.Product p
+
+          LEFT JOIN SalesLT.ProductCategory pc
+            ON p.ProductCategoryID = pc.ProductCategoryID
+
+          WHERE p.ProductID = @productId;
+
+        `);
+
+      if (result.recordset.length === 0) {
+        return null;
+      }
+
+      return result.recordset[0];
+
+    } catch (error) {
+
+      console.error(
+        'ERROR SQL OBTENER PRODUCTO POR ID:',
+        error
+      );
+
+      throw error;
+
+    }
+
+  }
 
 
   // =====================================================

@@ -2,17 +2,28 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const session = require('express-session');
 
 const CatalogoController =
     require('./controllers/catalogoController');
 
-const AuthController =
-    require('./controllers/authController');
+
+
+const CarritoController =
+    require('./controllers/carritoController');
+
 
 const app = express();
+console.log('INDEX.JS QUE ESTOY EJECUTANDO');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(session({
+    secret: 'aventuraworks-carrito',
+    resave: false,
+    saveUninitialized: true
+}));
 
 
 // =====================================================
@@ -60,20 +71,29 @@ app.get(
     CatalogoController.mostrarCatalogo
 );
 
+app.post(
+    '/carrito/agregar',
+    CarritoController.agregar
+);
+
+
+app.post(
+    '/carrito/eliminar',
+    CarritoController.eliminar
+);
+
+app.get(
+    '/carrito',
+    CarritoController.mostrar
+);
+
+console.log('RUTA POST /carrito/agregar REGISTRADA');
+
+
 
 // =====================================================
 // RUTAS DE AUTENTICACIÓN
 // =====================================================
-
-app.post(
-    '/api/auth/registro',
-    AuthController.registrar
-);
-
-app.post(
-    '/api/auth/login',
-    AuthController.login
-);
 
 app.get(
     '/login',
