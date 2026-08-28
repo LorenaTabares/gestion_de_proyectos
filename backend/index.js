@@ -7,7 +7,8 @@ const session = require('express-session');
 const CatalogoController =
     require('./controllers/catalogoController');
 
-
+const AuthController =
+    require('./controllers/authController');
 
 const CarritoController =
     require('./controllers/carritoController');
@@ -94,6 +95,16 @@ console.log('RUTA POST /carrito/agregar REGISTRADA');
 // =====================================================
 // RUTAS DE AUTENTICACIÓN
 // =====================================================
+
+app.post(
+    '/api/auth/registro',
+    AuthController.registrar
+);
+
+app.post(
+    '/api/auth/login',
+    AuthController.login
+);
 
 app.get(
     '/login',
