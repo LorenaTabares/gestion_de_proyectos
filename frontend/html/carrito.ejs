@@ -1,23 +1,26 @@
-```html
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Carrito - AdventureWorks</title>
 
+    <!-- CSS -->
+
     <link rel="stylesheet" href="/css/main.css">
-
     <link rel="stylesheet" href="/css/navbar.css">
-
     <link rel="stylesheet" href="/css/carrito.css">
-
     <link rel="stylesheet" href="/css/footer.css">
+
+    <!-- Fuente -->
 
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
@@ -26,20 +29,32 @@
 
 </head>
 
+
 <body>
 
-    <!-- NAVBAR -->
+
+    <!-- =====================================================
+         NAVBAR
+    ====================================================== -->
 
     <%- include('../../components/navbar.ejs') %>
 
 
+
+    <!-- =====================================================
+         CONTENIDO PRINCIPAL
+    ====================================================== -->
+
     <main class="carrito-container">
+
 
         <!-- ENCABEZADO -->
 
         <header class="carrito-header">
 
-            <h1>Mi carrito</h1>
+            <h1>
+                Mi carrito
+            </h1>
 
             <p>
                 Revisa los productos que has agregado a tu carrito.
@@ -48,9 +63,12 @@
         </header>
 
 
-        <% if (productos.length === 0) { %>
 
-            <!-- CARRITO VACÍO -->
+        <!-- =================================================
+             CARRITO VACÍO
+        ================================================== -->
+
+        <% if (productos.length === 0) { %>
 
             <section class="carrito-vacio">
 
@@ -58,32 +76,48 @@
                     🛒
                 </div>
 
-                <h2>Tu carrito está vacío</h2>
+                <h2>
+                    Tu carrito está vacío
+                </h2>
 
                 <p>
                     Agrega productos desde el catálogo para verlos aquí.
                 </p>
 
-                <a href="/catalogo" class="btn-continuar">
+                <a
+                    href="/catalogo"
+                    class="btn-continuar"
+                >
                     Volver al catálogo
                 </a>
 
             </section>
 
 
+
         <% } else { %>
 
-            <!-- CONTENIDO DEL CARRITO -->
+
+
+            <!-- =================================================
+                 CONTENIDO DEL CARRITO
+            ================================================== -->
 
             <section class="carrito-contenido">
 
-                <!-- PRODUCTOS -->
+
+                <!-- =================================================
+                     LISTA DE PRODUCTOS
+                ================================================== -->
 
                 <div class="lista-carrito">
 
+
                     <% productos.forEach(producto => { %>
 
+
                         <article class="item-carrito">
+
 
                             <!-- IMAGEN -->
 
@@ -107,13 +141,15 @@
                             </div>
 
 
+
                             <!-- INFORMACIÓN -->
 
                             <div class="item-info">
 
                                 <span class="item-id">
 
-                                    ID: #<%= producto.ProductID %>
+                                    ID:
+                                    #<%= producto.ProductID %>
 
                                 </span>
 
@@ -138,11 +174,14 @@
                             </div>
 
 
+
                             <!-- PRECIO -->
 
                             <div class="item-precio">
 
-                                <span>Precio</span>
+                                <span>
+                                    Precio
+                                </span>
 
                                 <strong>
 
@@ -153,11 +192,14 @@
                             </div>
 
 
+
                             <!-- CANTIDAD -->
 
                             <div class="item-cantidad">
 
-                                <span>Cantidad</span>
+                                <span>
+                                    Cantidad
+                                </span>
 
                                 <strong>
 
@@ -168,11 +210,14 @@
                             </div>
 
 
+
                             <!-- SUBTOTAL -->
 
                             <div class="item-subtotal">
 
-                                <span>Subtotal</span>
+                                <span>
+                                    Subtotal
+                                </span>
 
                                 <strong>
 
@@ -183,7 +228,10 @@
                             </div>
 
 
-                            <!-- ELIMINAR PRODUCTO -->
+
+                            <!-- =================================================
+                                 ELIMINAR PRODUCTO
+                            ================================================== -->
 
                             <form
                                 action="/carrito/eliminar"
@@ -201,9 +249,7 @@
                                     type="submit"
                                     class="btn-eliminar"
                                 >
-
-                                Eliminar
-
+                                    Eliminar
                                 </button>
 
                             </form>
@@ -211,20 +257,32 @@
 
                         </article>
 
+
                     <% }); %>
+
 
                 </div>
 
 
-                <!-- RESUMEN -->
+
+                <!-- =================================================
+                     RESUMEN DEL PEDIDO
+                ================================================== -->
 
                 <aside class="resumen-carrito">
 
-                    <h2>Resumen del pedido</h2>
+
+                    <h2>
+                        Resumen del pedido
+                    </h2>
+
+
 
                     <div class="resumen-linea">
 
-                        <span>Productos</span>
+                        <span>
+                            Productos
+                        </span>
 
                         <strong>
 
@@ -234,9 +292,13 @@
 
                     </div>
 
+
+
                     <div class="resumen-linea total">
 
-                        <span>Total</span>
+                        <span>
+                            Total
+                        </span>
 
                         <strong>
 
@@ -247,36 +309,89 @@
                     </div>
 
 
-                    <button class="btn-finalizar">
 
-                        Finalizar compra
+                    <!-- =================================================
+                         FINALIZAR COMPRA
+                    ================================================== -->
 
-                    </button>
+                    <form
+                        action="/carrito/finalizar"
+                        method="POST"
+                        id="form-finalizar"
+                    >
 
+                        <input
+                            type="hidden"
+                            name="customerId"
+                            id="customerId"
+                        >
+
+                        <button
+                            type="submit"
+                            class="btn-finalizar"
+                        >
+                            Finalizar compra
+                        </button>
+
+                    </form>
+
+
+
+                    <!-- SEGUIR COMPRANDO -->
 
                     <a
                         href="/catalogo"
                         class="btn-seguir"
                     >
-
                         Seguir comprando
-
                     </a>
+
 
                 </aside>
 
+
             </section>
 
+
         <% } %>
+
 
     </main>
 
 
-    <!-- FOOTER -->
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
 
     <%- include('../../components/footer.ejs') %>
+
+
+
+    <!-- =====================================================
+         OBTENER USUARIO DE SESSION STORAGE
+    ====================================================== -->
+
+    <script>
+
+        const usuario = JSON.parse(
+            sessionStorage.getItem('usuario')
+        );
+
+
+        if (
+            usuario &&
+            usuario.CustomerID
+        ) {
+
+            document.getElementById('customerId').value =
+                usuario.CustomerID;
+
+        }
+
+    </script>
+
 
 </body>
 
 </html>
-```

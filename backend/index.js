@@ -151,6 +151,14 @@ app.get(
 
 );
 
+app.post(
+
+    '/carrito/finalizar',
+
+    CarritoController.finalizarCompra
+
+);
+
 
 console.log(
     'RUTA POST /carrito/agregar REGISTRADA'
