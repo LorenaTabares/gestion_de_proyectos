@@ -1,0 +1,425 @@
+* {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            display: flex;
+
+            flex-direction: column;
+
+            font-family: Arial, sans-serif;
+
+            background-color: #f4f6f8;
+
+            color: #333;
+        }
+
+
+        main {
+
+            flex: 1;
+
+            padding: 30px;
+        }
+
+
+        /* =====================================
+           TITULO
+        ===================================== */
+
+        .inventario-titulo {
+
+            margin-bottom: 25px;
+
+            text-align: center;
+        }
+
+
+        .inventario-titulo h1 {
+
+            margin: 0 0 8px 0;
+
+            font-size: 30px;
+
+            color: #333;
+        }
+
+
+        .inventario-titulo p {
+
+            margin: 0;
+
+            color: #666;
+
+            font-size: 15px;
+        }
+
+
+        /* =====================================
+           TABLERO
+        ===================================== */
+
+        .tablero {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 20px;
+
+            align-items: start;
+        }
+
+
+        /* =====================================
+           COLUMNAS
+        ===================================== */
+
+        .columna {
+
+            background-color: #e9ecef;
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            min-height: 300px;
+        }
+
+        .columna-pendiente{
+            background-color: #f882757c;
+        }
+
+        .columna-proceso{
+            background-color: #ebc17c8a;
+        }
+
+        .columna-despachado{
+            background-color: #8fecb385;
+        }
+
+        .columna-cancelado{
+            background-color: #a4a4a487;
+        }
+
+
+        .columna h2 {
+
+            margin: 0 0 15px 0;
+
+            font-size: 18px;
+
+            text-align: center;
+
+            padding-bottom: 12px;
+
+            border-bottom: 2px solid #ddd;
+        }
+
+
+        .columna-pendiente h2 {
+            color: #c0392b;
+        }
+
+
+        .columna-proceso h2 {
+            color: #d68910;
+        }
+
+
+        .columna-despachado h2 {
+            color: #278b4d;
+        }
+
+
+        .columna-cancelado h2 {
+            color: #666;
+        }
+
+
+        /* =====================================
+           TARJETA DEL PEDIDO
+        ===================================== */
+
+        .pedido-card {
+
+            background-color: white;
+
+            border-radius: 10px;
+
+            margin-bottom: 15px;
+
+            padding: 16px;
+
+            box-shadow:
+                0 2px 6px rgba(0, 0, 0, 0.08);
+
+            border-left: 5px solid #ccc;
+        }
+
+
+        .columna-pendiente .pedido-card {
+
+            border-left-color: #e74c3c;
+        }
+
+
+        .columna-proceso .pedido-card {
+
+            border-left-color: #f1c40f;
+        }
+
+
+        .columna-despachado .pedido-card {
+
+            border-left-color: #2ecc71;
+        }
+
+
+        .columna-cancelado .pedido-card {
+
+            border-left-color: #7f8c8d;
+        }
+
+
+        /* =====================================
+           INFORMACION DEL PEDIDO
+        ===================================== */
+
+        .pedido-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 8px;
+        }
+
+
+        .pedido-id {
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            color: #333;
+        }
+
+
+        .pedido-fecha {
+
+            font-size: 13px;
+
+            color: #777;
+        }
+
+
+        /* =====================================
+           DESPLEGABLE DE PRODUCTOS
+        ===================================== */
+
+        .productos-desplegable {
+
+            margin-top: 12px;
+
+            border-top: 1px solid #eee;
+
+            border-bottom: 1px solid #eee;
+        }
+
+
+        .productos-desplegable summary {
+
+            cursor: pointer;
+
+            list-style: none;
+
+            padding: 12px 4px;
+
+            font-weight: bold;
+
+            font-size: 14px;
+
+            color: #555;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            user-select: none;
+        }
+
+
+        /* Ocultar la flecha original */
+        .productos-desplegable summary::-webkit-details-marker {
+
+            display: none;
+        }
+
+
+        /* Nuestra flechita */
+        .productos-desplegable summary::before {
+
+            content: "▶";
+
+            font-size: 11px;
+
+            transition: transform 0.2s ease;
+        }
+
+
+        /* Cuando está abierto */
+        .productos-desplegable[open]
+        summary::before {
+
+            transform: rotate(90deg);
+        }
+
+
+        .lista-productos {
+
+            padding: 0 4px 10px 4px;
+        }
+
+
+        .producto {
+
+            padding: 9px 0;
+
+            border-bottom: 1px solid #f0f0f0;
+
+            font-size: 13px;
+        }
+
+
+        .producto:last-child {
+
+            border-bottom: none;
+        }
+
+
+        .producto-nombre {
+
+            font-weight: bold;
+
+            margin-bottom: 3px;
+        }
+
+
+        .producto-info {
+
+            color: #777;
+
+            font-size: 12px;
+        }
+
+
+        /* =====================================
+           ESTADO
+        ===================================== */
+
+        .pedido-estado {
+
+            margin-top: 14px;
+        }
+
+
+        .pedido-estado label {
+
+            display: block;
+
+            margin-bottom: 6px;
+
+            font-size: 13px;
+
+            font-weight: bold;
+
+            color: #555;
+        }
+
+
+        .estado-pedido {
+
+            width: 100%;
+
+            padding: 9px 10px;
+
+            border-radius: 6px;
+
+            border: 1px solid #ccc;
+
+            background-color: white;
+
+            font-size: 13px;
+
+            cursor: pointer;
+        }
+
+
+        .estado-pedido:focus {
+
+            outline: none;
+
+            border-color: #777;
+        }
+
+
+        /* =====================================
+           CUANDO NO HAY PEDIDOS
+        ===================================== */
+
+        .sin-pedidos {
+
+            text-align: center;
+
+            color: #888;
+
+            font-size: 13px;
+
+            padding: 20px 5px;
+        }
+
+
+        /* =====================================
+           RESPONSIVE
+        ===================================== */
+
+        @media (max-width: 1100px) {
+
+            .tablero {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+        }
+
+
+        @media (max-width: 650px) {
+
+            main {
+
+                padding: 15px;
+
+            }
+
+
+            .tablero {
+
+                grid-template-columns: 1fr;
+
+            }
+
+        }

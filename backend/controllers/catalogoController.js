@@ -605,7 +605,9 @@ class CatalogoController {
 
           paginaActual,
 
-          totalPaginas
+          totalPaginas,
+          
+          pagina: 'catalogo'
 
         }
       );

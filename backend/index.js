@@ -1,8 +1,11 @@
 require('dotenv').config();
 
 const express = require('express');
+
 const path = require('path');
+
 const session = require('express-session');
+
 
 const CatalogoController =
     require('./controllers/catalogoController');
@@ -13,18 +16,40 @@ const AuthController =
 const CarritoController =
     require('./controllers/carritoController');
 
+const InventarioController =
+    require('./controllers/inventarioController');
+
 
 const app = express();
+
+
 console.log('INDEX.JS QUE ESTOY EJECUTANDO');
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-app.use(session({
-    secret: 'aventuraworks-carrito',
-    resave: false,
-    saveUninitialized: true
-}));
+// =====================================================
+// MIDDLEWARE
+// =====================================================
+
+app.use(express.json());
+
+app.use(
+    express.urlencoded({
+        extended: false
+    })
+);
+
+
+app.use(
+    session({
+
+        secret: 'aventuraworks-carrito',
+
+        resave: false,
+
+        saveUninitialized: true
+
+    })
+);
 
 
 // =====================================================
@@ -32,16 +57,32 @@ app.use(session({
 // =====================================================
 
 app.use(
+
     express.static(
-        path.join(__dirname, '../frontend')
+
+        path.join(
+            __dirname,
+            '../frontend'
+        )
+
     )
+
 );
 
+
 app.use(
+
     '/components',
+
     express.static(
-        path.join(__dirname, '../components')
+
+        path.join(
+            __dirname,
+            '../components'
+        )
+
     )
+
 );
 
 
@@ -54,67 +95,132 @@ app.set(
     'ejs'
 );
 
+
 app.set(
+
     'views',
+
     path.join(
         __dirname,
         '../frontend/html'
     )
+
 );
 
 
 // =====================================================
-// RUTA CATÁLOGO
+// CATÁLOGO
 // =====================================================
 
 app.get(
+
     '/catalogo',
+
     CatalogoController.mostrarCatalogo
+
 );
 
+
+// =====================================================
+// CARRITO
+// =====================================================
+
 app.post(
+
     '/carrito/agregar',
+
     CarritoController.agregar
+
 );
 
 
 app.post(
+
     '/carrito/eliminar',
+
     CarritoController.eliminar
+
 );
 
+
 app.get(
+
     '/carrito',
+
     CarritoController.mostrar
+
 );
 
-console.log('RUTA POST /carrito/agregar REGISTRADA');
 
+console.log(
+    'RUTA POST /carrito/agregar REGISTRADA'
+);
 
 
 // =====================================================
-// RUTAS DE AUTENTICACIÓN
+// INVENTARIO
 // =====================================================
-
-app.post(
-    '/api/auth/registro',
-    AuthController.registrar
-);
-
-app.post(
-    '/api/auth/login',
-    AuthController.login
-);
 
 app.get(
+
+    '/inventario',
+
+    InventarioController.mostrarInventario
+
+);
+
+
+app.post(
+
+    '/inventario/estado',
+
+    InventarioController.cambiarEstado
+
+);
+
+
+// =====================================================
+// AUTENTICACIÓN
+// =====================================================
+
+app.post(
+
+    '/api/auth/registro',
+
+    AuthController.registrar
+
+);
+
+
+app.post(
+
+    '/api/auth/login',
+
+    AuthController.login
+
+);
+
+
+app.get(
+
     '/login',
+
     (req, res) => {
 
         res.sendFile(
-            path.join(__dirname, '../frontend/html/login.html')
+
+            path.join(
+
+                __dirname,
+
+                '../frontend/html/login.html'
+
+            )
+
         );
 
     }
+
 );
 
 
@@ -123,12 +229,15 @@ app.get(
 // =====================================================
 
 app.get(
+
     '/',
+
     (req, res) => {
 
         res.redirect('/login');
 
     }
+
 );
 
 
@@ -139,13 +248,19 @@ app.get(
 const PORT =
     process.env.PORT || 3000;
 
+
 app.listen(
+
     PORT,
+
     () => {
 
         console.log(
+
             `Servidor corriendo en http://localhost:${PORT}`
+
         );
 
     }
+
 );
