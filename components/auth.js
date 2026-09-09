@@ -1,7 +1,7 @@
 // Funciones para animaciones del LOGIN
-const container      = document.querySelector('.container');
-const btnSignUp      = document.querySelector('#btn-sign-up');
-const btnSignIn      = document.querySelector('#btn-sign-in');
+const container = document.querySelector('.container');
+const btnSignUp = document.querySelector('#btn-sign-up');
+const btnSignIn = document.querySelector('#btn-sign-in');
 // Cambia entre el formulario de login y el de registro usando la clase CSS "toggle"
 btnSignUp.addEventListener('click', () => container.classList.add('toggle'));
 btnSignIn.addEventListener('click', () => container.classList.remove('toggle'));
@@ -93,11 +93,19 @@ if (btnLogin) {
 			mostrarMensaje(resultado.message);
 
 			if (respuesta.ok) {
+				console.log("Datos recibidos del servidor:", resultado.usuario); // <-- DEPURACIÓN
+				// Guardar los datos del usuario en la sesión del navegador
 				sessionStorage.setItem(
 					'usuario',
 					JSON.stringify(resultado.usuario)
 				);
-				window.location.assign('/catalogo');
+
+				// Redirección según el rol asignado
+				if (resultado.usuario && resultado.usuario.role === 'trabajador') {
+					window.location.assign('/inventario'); // Vista para trabajador/bodega
+				} else {
+					window.location.assign('/catalogo');   // Vista para cliente
+				}
 			}
 		} catch (error) {
 			console.error('ERROR DE LOGIN:', error);

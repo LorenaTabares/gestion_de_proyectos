@@ -15,6 +15,20 @@
     <link rel="stylesheet" href="../css/inventario.css">
     <link rel="stylesheet" href="../css/footer.css">
 
+    <!-- =====================================================
+         CONTROL DE ACCESO FRONTEND (DENTRO DEL HEAD)
+    ====================================================== -->
+    <script>
+        (function bloquearAcceso() {
+            const usuarioGuardado = JSON.parse(sessionStorage.getItem('usuario'));
+
+            if (!usuarioGuardado || usuarioGuardado.role !== 'trabajador') {
+                alert('Acceso denegado: Esta sección es exclusiva para personal de bodega.');
+                window.location.assign('/catalogo');
+            }
+        })();
+    </script>
+
 </head>
 
 
