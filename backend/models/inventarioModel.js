@@ -1,111 +1,88 @@
-const sql = require('mssql/msnodesqlv8');
+const { obtenerConexion, sql } = require('../conexion');
 
-const config = {
-  connectionString:
-    `Driver={${process.env.DB_DRIVER}};` +
-    `Server=${process.env.DB_SERVER};` +
-    `Database=${process.env.DB_DATABASE};` +
-    `Trusted_Connection=yes;`
-};
+class InventarioModel {
 
-let poolPromise = null;
+    // =====================================================
+    // OBTENER TODOS LOS PEDIDOS CON SUS PRODUCTOS
+    // =====================================================
+    static async obtenerPedidos() {
+        try {
+            const pool = await obtenerConexion();
 
-const obtenerPool = async () => {
-  if (!poolPromise) {
-    poolPromise = sql.connect(config).catch(error => {
-      poolPromise = null;
-      throw error;
-    });
-  }
+            const result = await pool.request().query(`
+                SELECT 
+                    h.SalesOrderID,
+                    CONVERT(VARCHAR(10), h.OrderDate, 120) AS OrderDate,
+                    h.Status,
+                    d.ProductID,
+                    d.OrderQty,
+                    p.Name,
+                    p.ProductNumber
+                FROM SalesLT.SalesOrderHeader h
+                INNER JOIN SalesLT.SalesOrderDetail d 
+                    ON h.SalesOrderID = d.SalesOrderID
+                INNER JOIN SalesLT.Product p 
+                    ON d.ProductID = p.ProductID
+                ORDER BY h.OrderDate DESC, h.SalesOrderID DESC;
+            `);
 
-  return poolPromise;
-};
+            // Mapear y agrupar los detalles de productos por cada Pedido
+            const pedidosMap = new Map();
 
+            result.recordset.forEach(row => {
+                if (!pedidosMap.has(row.SalesOrderID)) {
+                    pedidosMap.set(row.SalesOrderID, {
+                        SalesOrderID: row.SalesOrderID,
+                        OrderDate: row.OrderDate,
+                        Status: row.Status,
+                        productos: []
+                    });
+                }
 
-// ==========================================
-// OBTENER PEDIDOS
-// ==========================================
-const obtenerPedidos = async () => {
+                pedidosMap.get(row.SalesOrderID).productos.push({
+                    ProductID: row.ProductID,
+                    Name: row.Name,
+                    ProductNumber: row.ProductNumber,
+                    OrderQty: row.OrderQty
+                });
+            });
 
-  const pool = await obtenerPool();
+            // Convertir el Map a un array de pedidos
+            return Array.from(pedidosMap.values());
 
-  const result = await pool.request().query(`
-    SELECT
-      h.SalesOrderID,
-      CONVERT(varchar(10), h.OrderDate, 103) AS OrderDate,
-      h.Status,
-
-      d.SalesOrderDetailID,
-      d.OrderQty,
-
-      p.ProductID,
-      p.Name,
-      p.ProductNumber
-
-    FROM SalesLT.SalesOrderHeader AS h
-
-    INNER JOIN SalesLT.SalesOrderDetail AS d
-      ON h.SalesOrderID = d.SalesOrderID
-
-    INNER JOIN SalesLT.Product AS p
-      ON d.ProductID = p.ProductID
-
-    WHERE
-      h.SalesOrderID IN (
-        71946,
-        71935,
-        71923,
-        71920,
-        71917
-      )
-      OR h.OrderDate >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1)
-
-    ORDER BY
-      h.SalesOrderID DESC,
-      d.SalesOrderDetailID ASC
-  `);
-
-  return result.recordset;
-};
+        } catch (error) {
+            console.error('ERROR SQL OBTENER PEDIDOS INVENTARIO:', error);
+            throw error;
+        }
+    }
 
 
-// ==========================================
-// CAMBIAR ESTADO DEL PEDIDO
-// ==========================================
-const cambiarEstado = async (salesOrderID, nuevoEstado) => {
+    // =====================================================
+    // ACTUALIZAR ESTADO DEL PEDIDO
+    // =====================================================
+    static async actualizarEstadoPedido(salesOrderID, status) {
+        try {
+            const pool = await obtenerConexion();
 
-  const pool = await obtenerPool();
+            await pool
+                .request()
+                .input('salesOrderID', sql.Int, salesOrderID)
+                .input('status', sql.TinyInt, status)
+                .query(`
+                    UPDATE SalesLT.SalesOrderHeader
+                    SET Status = @status,
+                        ModifiedDate = GETDATE()
+                    WHERE SalesOrderID = @salesOrderID;
+                `);
 
-  const result = await pool.request()
+            return true;
 
-    .input(
-      'SalesOrderID',
-      sql.Int,
-      salesOrderID
-    )
+        } catch (error) {
+            console.error('ERROR SQL ACTUALIZAR ESTADO PEDIDO:', error);
+            throw error;
+        }
+    }
 
-    .input(
-      'Status',
-      sql.TinyInt,
-      nuevoEstado
-    )
+}
 
-    .query(`
-      UPDATE SalesLT.SalesOrderHeader
-
-      SET
-        Status = @Status,
-        ModifiedDate = GETDATE()
-
-      WHERE
-        SalesOrderID = @SalesOrderID
-    `);
-
-  return result.rowsAffected[0] || 0;
-};
-
-
-module.exports = {
-  obtenerPedidos,
-  cambiarEstado
-};
+module.exports = InventarioModel;
