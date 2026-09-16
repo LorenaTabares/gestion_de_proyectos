@@ -72,6 +72,24 @@
   font-size: 0.8rem;
 }
 
+.user-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.user-profile-link:hover .user-name {
+  color: #93c5fd;
+}
+
 .btn-logout {
 
     text-decoration: none;

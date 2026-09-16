@@ -19,6 +19,9 @@ const CarritoController =
 const InventarioController =
     require('./controllers/inventarioController');
 
+const ControladorPerfil =
+    require('./controllers/perfilController');
+
 
 const app = express();
 
@@ -30,7 +33,7 @@ console.log('INDEX.JS QUE ESTOY EJECUTANDO');
 // MIDDLEWARE
 // =====================================================
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 app.use(
     express.urlencoded({
@@ -51,6 +54,11 @@ app.use(
     })
 );
 
+app.use((req, res, next) => {
+    res.locals.usuario = req.session.usuario || null;
+    next();
+});
+
 
 // =====================================================
 // ARCHIVOS ESTÁTICOS
@@ -62,7 +70,7 @@ app.use(
 
         path.join(
             __dirname,
-            '../frontend'
+            '../Frontend'
         )
 
     )
@@ -102,7 +110,7 @@ app.set(
 
     path.join(
         __dirname,
-        '../frontend/html'
+        '../Frontend/html'
     )
 
 );
@@ -208,6 +216,14 @@ app.post(
 
 );
 
+// =====================================================
+// PERFIL
+// =====================================================
+app.get('/perfil', ControladorPerfil.requerirSesion, ControladorPerfil.mostrarPerfil);
+app.post('/api/perfil/datos', ControladorPerfil.requerirSesion, ControladorPerfil.actualizarDatosPerfil);
+app.post('/api/perfil/password', ControladorPerfil.requerirSesion, ControladorPerfil.cambiarContrasena);
+app.post('/api/perfil/foto', ControladorPerfil.requerirSesion, ControladorPerfil.guardarFotoPerfil);
+
 
 app.get(
 
@@ -221,7 +237,7 @@ app.get(
 
                 __dirname,
 
-                '../frontend/html/login.html'
+                '../Frontend/html/login.html'
 
             )
 

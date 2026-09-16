@@ -57,10 +57,14 @@
             <span>Carrito</span>
         </a>
 
-        <!-- Badge dinámico para mostrar el Rol real -->
-        <span class="user-badge" style="text-transform: capitalize;">
-            <%= (typeof usuario !== 'undefined' && usuario && (usuario.Rol || usuario.rol)) ? (usuario.Rol || usuario.rol) : 'Cliente' %>
-        </span>
+        <% if (typeof usuario !== 'undefined' && usuario) { %>
+            <a href="/perfil" class="user-profile-link" title="Abrir mi cuenta">
+                <span class="user-name"><%= usuario.FirstName %> <%= usuario.LastName || '' %></span>
+                <span class="user-badge" style="text-transform: capitalize;">
+                    <%= usuario.Rol || usuario.rol || 'cliente' %>
+                </span>
+            </a>
+        <% } %>
 
         <a href="/logout" class="btn-logout">
             Cerrar Sesión
