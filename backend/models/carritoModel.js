@@ -4,267 +4,184 @@ const CatalogoModel = require('./catalogoModel');
 class CarritoModel {
 
     // =====================================================
-    // OBTENER PRODUCTO
+    // OBTENER PRODUCTO POR ID
     // =====================================================
-
     static async obtenerProducto(productId) {
-
         return await CatalogoModel.obtenerProductoPorId(productId);
-
     }
 
+    // =====================================================
+    // OBTENER CARRITO PERSISTENTE DE LA BASE DE DATOS
+    // =====================================================
+    static async obtenerCarritoDeBD(customerId) {
+        try {
+            const pool = await obtenerConexion();
+            const result = await pool.request()
+                .input('CustomerID', sql.Int, customerId)
+                .query(`
+                    SELECT ProductID as productId, Cantidad as cantidad
+                    FROM SalesLT.CarritoItem
+                    WHERE CustomerID = @CustomerID
+                `);
+            return result.recordset;
+        } catch (error) {
+            console.error('Error al obtener carrito de la BD:', error);
+            return [];
+        }
+    }
 
     // =====================================================
-    // FINALIZAR COMPRA
+    // GUARDAR O ACTUALIZAR ÍTEM DEL CARRITO EN LA BD
     // =====================================================
+    static async guardarCarritoEnBD(customerId, carrito) {
+        try {
+            const pool = await obtenerConexion();
+            
+            // Limpiamos la lista previa del cliente para guardar el estado actual
+            await pool.request()
+                .input('CustomerID', sql.Int, customerId)
+                .query('DELETE FROM SalesLT.CarritoItem WHERE CustomerID = @CustomerID');
 
+            // Insertamos cada producto del carrito activo
+            for (const item of carrito) {
+                await pool.request()
+                    .input('CustomerID', sql.Int, customerId)
+                    .input('ProductID', sql.Int, item.productId)
+                    .input('Cantidad', sql.Int, item.cantidad)
+                    .query(`
+                        INSERT INTO SalesLT.CarritoItem (CustomerID, ProductID, Cantidad)
+                        VALUES (@CustomerID, @ProductID, @Cantidad)
+                    `);
+            }
+        } catch (error) {
+            console.error('Error al guardar carrito en la BD:', error);
+        }
+    }
+
+    // =====================================================
+    // VACIAR CARRITO EN LA BD
+    // =====================================================
+    static async limpiarCarritoDeBD(customerId) {
+        try {
+            const pool = await obtenerConexion();
+            await pool.request()
+                .input('CustomerID', sql.Int, customerId)
+                .query('DELETE FROM SalesLT.CarritoItem WHERE CustomerID = @CustomerID');
+        } catch (error) {
+            console.error('Error al limpiar carrito en BD:', error);
+        }
+    }
+
+    // =====================================================
+    // FINALIZAR COMPRA (REGISTRAR PEDIDO EN ADVENTUREWORKS)
+    // =====================================================
     static async finalizarCompra(customerId, carrito) {
-
         const pool = await obtenerConexion();
-
         const transaction = new sql.Transaction(pool);
 
         try {
-
             await transaction.begin();
 
+            // 1. Calcular el total acumulado
+            let subtotalTotal = 0;
+            const detallesItems = [];
 
-            // =================================================
-            // CREAR PEDIDO
-            // =================================================
+            for (const item of carrito) {
+                const producto = await CatalogoModel.obtenerProductoPorId(item.productId);
+                if (!producto) {
+                    throw new Error(`El producto con ID ${item.productId} no existe.`);
+                }
 
-            const pedido = await transaction
-                .request()
+                const unitPrice = Number(producto.ListPrice || 0);
+                const lineTotal = unitPrice * item.cantidad;
+                subtotalTotal += lineTotal;
 
-                .input(
-                    'CustomerID',
-                    sql.Int,
-                    customerId
-                )
+                detallesItems.push({
+                    productId: item.productId,
+                    cantidad: item.cantidad,
+                    unitPrice: unitPrice
+                });
+            }
 
-                .input(
-                    'SubTotal',
-                    sql.Money,
-                    0
-                )
-
-                .input(
-                    'TaxAmt',
-                    sql.Money,
-                    0
-                )
-
-                .input(
-                    'Freight',
-                    sql.Money,
-                    0
-                )
-
+            // 2. Crear cabecera del pedido (SalesOrderHeader)
+            const pedidoResult = await transaction.request()
+                .input('CustomerID', sql.Int, customerId)
+                .input('SubTotal', sql.Money, subtotalTotal)
+                .input('TaxAmt', sql.Money, subtotalTotal * 0.08) // 8% estimado de impuesto
+                .input('Freight', sql.Money, 10.00) // Valor estimado de flete
                 .query(`
-
-                    INSERT INTO SalesLT.SalesOrderHeader
-                    (
+                    INSERT INTO SalesLT.SalesOrderHeader (
                         OrderDate,
                         DueDate,
                         Status,
                         OnlineOrderFlag,
                         CustomerID,
-                        ShipToAddressID,
-                        BillToAddressID,
                         ShipMethod,
                         SubTotal,
                         TaxAmt,
                         Freight
                     )
-
-                    VALUES
-                    (
+                    VALUES (
                         GETDATE(),
                         DATEADD(DAY, 7, GETDATE()),
                         1,
                         1,
                         @CustomerID,
-                        NULL,
-                        NULL,
-                        'STANDARD',
+                        'CARGO TRANSPORT',
                         @SubTotal,
                         @TaxAmt,
                         @Freight
                     );
 
                     SELECT SCOPE_IDENTITY() AS SalesOrderID;
-
                 `);
 
+            const salesOrderId = pedidoResult.recordset[0].SalesOrderID;
 
-            const salesOrderId =
-                pedido.recordset[0].SalesOrderID;
-
-
-            // =================================================
-            // AGREGAR PRODUCTOS DEL CARRITO
-            // =================================================
-
-            let subtotal = 0;
-
-
-            for (const item of carrito) {
-
-                const producto =
-                    await CatalogoModel.obtenerProductoPorId(
-                        item.productId
-                    );
-
-
-                if (!producto) {
-
-                    throw new Error(
-                        `Producto ${item.productId} no encontrado`
-                    );
-
-                }
-
-
-                const unitPrice =
-                    Number(producto.ListPrice);
-
-
-                const lineTotal =
-                    unitPrice * item.cantidad;
-
-
-                subtotal += lineTotal;
-
-
-                await transaction
-                    .request()
-
-                    .input(
-                        'SalesOrderID',
-                        sql.Int,
-                        salesOrderId
-                    )
-
-                    .input(
-                        'OrderQty',
-                        sql.SmallInt,
-                        item.cantidad
-                    )
-
-                    .input(
-                        'ProductID',
-                        sql.Int,
-                        item.productId
-                    )
-
-                    .input(
-                        'UnitPrice',
-                        sql.Money,
-                        unitPrice
-                    )
-
-                    .input(
-                        'UnitPriceDiscount',
-                        sql.Money,
-                        0
-                    )
-
+            // 3. Insertar detalle de productos (SalesOrderDetail)
+            for (const item of detallesItems) {
+                await transaction.request()
+                    .input('SalesOrderID', sql.Int, salesOrderId)
+                    .input('OrderQty', sql.SmallInt, item.cantidad)
+                    .input('ProductID', sql.Int, item.productId)
+                    .input('UnitPrice', sql.Money, item.unitPrice)
+                    .input('UnitPriceDiscount', sql.Money, 0)
                     .query(`
-
-                        INSERT INTO SalesLT.SalesOrderDetail
-                        (
+                        INSERT INTO SalesLT.SalesOrderDetail (
                             SalesOrderID,
                             OrderQty,
                             ProductID,
                             UnitPrice,
                             UnitPriceDiscount
                         )
-
-                        VALUES
-                        (
+                        VALUES (
                             @SalesOrderID,
                             @OrderQty,
                             @ProductID,
                             @UnitPrice,
                             @UnitPriceDiscount
                         );
-
                     `);
-
             }
 
-
-            // =================================================
-            // ACTUALIZAR SUBTOTAL
-            // =================================================
-
-            await transaction
-                .request()
-
-                .input(
-                    'SalesOrderID',
-                    sql.Int,
-                    salesOrderId
-                )
-
-                .input(
-                    'SubTotal',
-                    sql.Money,
-                    subtotal
-                )
-
-                .query(`
-
-                    UPDATE SalesLT.SalesOrderHeader
-
-                    SET
-                        SubTotal = @SubTotal,
-                        ModifiedDate = GETDATE()
-
-                    WHERE SalesOrderID = @SalesOrderID;
-
-                `);
-
-
-            // =================================================
-            // CONFIRMAR COMPRA
-            // =================================================
-
+            // 4. Confirmar la transacción
             await transaction.commit();
 
+            // 5. Limpiar carrito guardado en la BD
+            await this.limpiarCarritoDeBD(customerId);
 
             return salesOrderId;
 
-
         } catch (error) {
-
-            console.error(
-                'ERROR AL FINALIZAR COMPRA:',
-                error
-            );
-
-
+            console.error('ERROR AL FINALIZAR COMPRA:', error);
             try {
-
                 await transaction.rollback();
-
             } catch (rollbackError) {
-
-                console.error(
-                    'ERROR AL HACER ROLLBACK:',
-                    rollbackError
-                );
-
+                console.error('ERROR EN ROLLBACK:', rollbackError);
             }
-
-
             throw error;
-
         }
-
     }
-
 }
-
 
 module.exports = CarritoModel;

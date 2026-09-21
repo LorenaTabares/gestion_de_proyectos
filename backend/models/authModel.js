@@ -9,9 +9,8 @@ class AuthModel {
         try {
             const pool = await obtenerConexion();
 
-            const result = await pool
-                .request()
-                .input('email', sql.NVarChar(50), email)
+            const result = await pool.request()
+                .input('email', sql.NVarChar(100), email) // Se amplió el límite a 100 caracteres
                 .query(`
                     SELECT
                         CustomerID,
@@ -20,7 +19,7 @@ class AuthModel {
                         EmailAddress,
                         PasswordHash,
                         PasswordSalt,
-                        Rol -- <--- SE AGREGÓ ESTA COLUMNA
+                        COALESCE(Rol, 'cliente') AS Rol
                     FROM SalesLT.Customer
                     WHERE EmailAddress = @email;
                 `);
@@ -41,13 +40,15 @@ class AuthModel {
         try {
             const pool = await obtenerConexion();
 
-            const result = await pool
-                .request()
+            const rolAGuardar = (datos.rol || datos.Rol || 'cliente').toLowerCase();
+
+            const result = await pool.request()
                 .input('firstName', sql.NVarChar(50), datos.firstName)
-                .input('lastName', sql.NVarChar(50), datos.lastName)
-                .input('email', sql.NVarChar(50), datos.email)
+                .input('lastName', sql.NVarChar(50), datos.lastName || '')
+                .input('email', sql.NVarChar(100), datos.email) // Se amplió el límite a 100
                 .input('passwordHash', sql.VarChar(128), datos.passwordHash)
                 .input('passwordSalt', sql.VarChar(10), datos.passwordSalt)
+                .input('rol', sql.NVarChar(20), rolAGuardar)
                 .query(`
                     INSERT INTO SalesLT.Customer
                     (
@@ -65,7 +66,7 @@ class AuthModel {
                         @email,
                         @passwordHash,
                         @passwordSalt,
-                        'cliente'
+                        @rol
                     );
 
                     SELECT
@@ -73,7 +74,7 @@ class AuthModel {
                         FirstName,
                         LastName,
                         EmailAddress,
-                        Rol -- <--- SE AGREGÓ PARA DEVOLVER EL ROL TRAS EL REGISTRO
+                        COALESCE(Rol, 'cliente') AS Rol
                     FROM SalesLT.Customer
                     WHERE CustomerID = SCOPE_IDENTITY();
                 `);
