@@ -25,22 +25,23 @@ class ControladorPerfil {
 
     static async actualizarDatosPerfil(req, res) {
         try {
+            const actual = await ModeloPerfil.obtenerPorId(req.session.usuario.CustomerID) || {};
             const datos = {
                 customerId: req.session.usuario.CustomerID,
-                firstName: String(req.body.firstName || '').trim(),
-                lastName: String(req.body.lastName || '').trim(),
-                email: String(req.body.email || '').trim().toLowerCase(),
-                phone: String(req.body.phone || '').trim(),
-                addressLine1: String(req.body.addressLine1 || '').trim(),
-                addressLine2: String(req.body.addressLine2 || '').trim(),
-                city: String(req.body.city || '').trim(),
-                stateProvince: String(req.body.stateProvince || '').trim(),
-                countryRegion: String(req.body.countryRegion || '').trim(),
-                postalCode: String(req.body.postalCode || '').trim()
+                firstName: String(req.body.firstName || '').trim() || actual.FirstName || '',
+                lastName: String(req.body.lastName || '').trim() || actual.LastName || '',
+                email: String(req.body.email || '').trim().toLowerCase() || actual.EmailAddress || '',
+                phone: String(req.body.phone || '').trim() || actual.Phone || '',
+                addressLine1: String(req.body.addressLine1 || '').trim() || actual.AddressLine1 || '',
+                addressLine2: String(req.body.addressLine2 || '').trim() || actual.AddressLine2 || '',
+                city: String(req.body.city || '').trim() || actual.City || '',
+                stateProvince: String(req.body.stateProvince || '').trim() || actual.StateProvince || '',
+                countryRegion: String(req.body.countryRegion || '').trim() || actual.CountryRegion || '',
+                postalCode: String(req.body.postalCode || '').trim() || actual.PostalCode || ''
             };
 
-            if (!datos.firstName || !datos.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
-                return res.status(400).json({ message: 'Nombre y correo válido son obligatorios.' });
+            if (datos.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
+                return res.status(400).json({ message: 'El correo electrónico no tiene un formato válido.' });
             }
 
             const camposDireccion = [
@@ -56,13 +57,15 @@ class ControladorPerfil {
 
             if (direccionIniciada && !direccionValida) {
                 return res.status(400).json({
-                    message: 'Completa dirección, ciudad, estado, país y código postal.'
+                    message: 'Completa ciudad, estado, país y código postal.'
                 });
             }
 
-            const existente = await AuthModel.buscarUsuarioPorEmail(datos.email);
-            if (existente && existente.CustomerID !== datos.customerId) {
-                return res.status(409).json({ message: 'El correo ya está registrado.' });
+            if (datos.email) {
+                const existente = await AuthModel.buscarUsuarioPorEmail(datos.email);
+                if (existente && existente.CustomerID !== datos.customerId) {
+                    return res.status(409).json({ message: 'El correo ya está registrado.' });
+                }
             }
 
             const perfil = await ModeloPerfil.actualizarPerfil(datos);
