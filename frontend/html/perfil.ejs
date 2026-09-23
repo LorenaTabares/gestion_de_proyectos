@@ -36,15 +36,15 @@
             <article class="perfil-panel">
                 <h2>Información personal y de contacto</h2>
                 <form id="perfil-form" class="perfil-form">
-                    <label>Nombre<input name="firstName" value="<%= perfil.FirstName %>" required></label>
+                    <label>Nombre<input name="firstName" value="<%= perfil.FirstName || '' %>"></label>
                     <label>Apellido<input name="lastName" value="<%= perfil.LastName || '' %>"></label>
-                    <label>Correo electrónico<input name="email" type="email" value="<%= perfil.EmailAddress %>" required></label>
+                    <label>Correo electrónico<input name="email" type="email" value="<%= perfil.EmailAddress || '' %>"></label>
                     <label>Teléfono<input name="phone" value="<%= perfil.Phone || '' %>"></label>
                     <label>Dirección<input name="addressLine1" value="<%= perfil.AddressLine1 || '' %>"></label>
-                    <label>Detalles<input name="addressLine2" value="<%= perfil.AddressLine2 || '' %>"></label>
+                    <label>Detalles<input name="addressLine2" value="<%= perfil.AddressLine2 || '' %>" placeholder="Ejemplo: Apartamento 302, Torre B, barrio El Bosque"></label>
                     <div class="perfil-form-row">
                         <label>Ciudad<input name="city" value="<%= perfil.City || '' %>"></label>
-                        <label>Estado<input name="stateProvince" value="<%= perfil.StateProvince || '' %>"></label>
+                        <label>Estado / Departamento<input name="stateProvince" value="<%= perfil.StateProvince || '' %>"></label>
                     </div>
                     <div class="perfil-form-row">
                         <label>País<input name="countryRegion" value="<%= perfil.CountryRegion || '' %>"></label>
@@ -64,16 +64,47 @@
                 </form>
             </article>
         </section>
-        <p id="perfil-message" class="perfil-message" role="status"></p>
     </main>
+
+    <div id="alert-modal" class="modal hidden" aria-live="polite" aria-modal="true" role="dialog">
+        <div class="modal-content">
+            <button type="button" class="modal-close" aria-label="Cerrar mensaje">×</button>
+            <div id="alert-icon" class="alert-icon">!</div>
+            <h3 id="alert-title">Mensaje</h3>
+            <p id="alert-text">Texto del aviso.</p>
+        </div>
+    </div>
+
     <script>
-        const message = document.querySelector('#perfil-message');
-        const showMessage = text => { message.textContent = text; };
+        const modal = document.querySelector('#alert-modal');
+        const modalTitle = document.querySelector('#alert-title');
+        const modalText = document.querySelector('#alert-text');
+        const modalIcon = document.querySelector('#alert-icon');
+
+        const showMessage = (text, type = 'success') => {
+            modalTitle.textContent = type === 'success' ? 'Confirmación' : 'Advertencia';
+            modalText.textContent = text;
+            modalIcon.textContent = type === 'success' ? '✓' : '!';
+            modalIcon.classList.toggle('success', type === 'success');
+            modalIcon.classList.toggle('error', type !== 'success');
+            modal.classList.remove('hidden');
+        };
+
+        const closeMessage = () => {
+            modal.classList.add('hidden');
+        };
+
+        document.querySelector('.modal-close').addEventListener('click', closeMessage);
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) closeMessage();
+        });
+
         const send = async (url, data) => {
             const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
             const result = await response.json();
-            if (!response.ok) throw new Error(result.message);
-            showMessage(result.message);
+            if (!response.ok) throw new Error(result.message || 'Hubo un problema.');
+            showMessage(result.message || 'Operación realizada correctamente.', 'success');
+            return result;
         };
         const formData = form => Object.fromEntries(new FormData(form));
 
@@ -83,8 +114,26 @@
 
         perfilForm.addEventListener('submit', async event => {
             event.preventDefault();
-            try { await send('/api/perfil/datos', formData(event.currentTarget)); }
-            catch (error) { showMessage(error.message); }
+            try {
+                const data = formData(event.currentTarget);
+                const email = (data.email || '').trim();
+                const firstName = (data.firstName || '').trim();
+
+                if (!firstName && !email && !data.lastName && !data.phone && !data.addressLine1 && !data.addressLine2 && !data.city && !data.stateProvince && !data.countryRegion && !data.postalCode) {
+                    showMessage('No has escrito ningún dato para guardar.', 'error');
+                    return;
+                }
+
+                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showMessage('El correo electrónico no tiene un formato válido.', 'error');
+                    return;
+                }
+
+                await send('/api/perfil/datos', data);
+            }
+            catch (error) {
+                showMessage(error.message, 'error');
+            }
         });
         passwordForm.addEventListener('submit', async event => {
             event.preventDefault();
@@ -92,25 +141,25 @@
                 await send('/api/perfil/password', formData(passwordForm));
                 passwordForm.reset();
             }
-            catch (error) { showMessage(error.message); }
+            catch (error) { showMessage(error.message, 'error'); }
         });
 
         document.querySelector('#select-photo').addEventListener('click', () => input.click());
         input.addEventListener('change', () => {
             const file = input.files[0];
             if (!file) return;
-            if (file.size > 500 * 1024) { showMessage('La foto debe ser menor de 500 KB.'); input.value = ''; return; }
+            if (file.size > 500 * 1024) { showMessage('La foto debe ser menor de 500 KB.', 'error'); input.value = ''; return; }
             const reader = new FileReader();
             reader.onload = () => document.querySelector('#avatar-preview').outerHTML = `<img id="avatar-preview" src="${reader.result}" alt="Foto de perfil">`;
             reader.readAsDataURL(file);
         });
         document.querySelector('#save-photo').addEventListener('click', () => {
             const file = input.files[0];
-            if (!file) { showMessage('Elige una foto antes de guardarla.'); return; }
+            if (!file) { showMessage('Elige una foto antes de guardarla.', 'error'); return; }
             const reader = new FileReader();
             reader.onload = async () => {
                 try { await send('/api/perfil/foto', { foto: reader.result }); }
-                catch (error) { showMessage(error.message); }
+                catch (error) { showMessage(error.message, 'error'); }
             };
             reader.readAsDataURL(file);
         });
