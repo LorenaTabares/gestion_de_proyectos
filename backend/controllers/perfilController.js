@@ -3,15 +3,26 @@ const ModeloPerfil = require('../models/perfilModel');
 const AuthModel = require('../models/authModel');
 
 class ControladorPerfil {
+    // =====================================================
+    // MIDDLEWARE DE VERIFICACIÓN DE SESIÓN
+    // =====================================================
     static requerirSesion(req, res, next) {
-        if (!req.session.usuario) return res.redirect('/login');
+        if (!req.session || !req.session.usuario) {
+            return res.redirect('/login');
+        }
         next();
     }
 
+    // =====================================================
+    // MOSTRAR PERFIL
+    // =====================================================
     static async mostrarPerfil(req, res) {
         try {
-            const perfil = await ModeloPerfil.obtenerPorId(req.session.usuario.CustomerID);
+            const customerId = req.session.usuario.CustomerID;
+            const perfil = await ModeloPerfil.obtenerPorId(customerId);
+
             if (!perfil) return res.redirect('/login');
+
             return res.render('perfil', {
                 perfil,
                 fotoPerfil: await ControladorPerfil.obtenerFotoPerfil(perfil.CustomerID),
@@ -23,6 +34,9 @@ class ControladorPerfil {
         }
     }
 
+    // =====================================================
+    // ACTUALIZAR DATOS DE PERFIL
+    // =====================================================
     static async actualizarDatosPerfil(req, res) {
         try {
             const actual = await ModeloPerfil.obtenerPorId(req.session.usuario.CustomerID) || {};
@@ -40,10 +54,11 @@ class ControladorPerfil {
                 postalCode: String(req.body.postalCode || '').trim() || actual.PostalCode || ''
             };
 
-            if (datos.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
-                return res.status(400).json({ message: 'El correo electrónico no tiene un formato válido.' });
+            if (!datos.firstName || !datos.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
+                return res.status(400).json({ message: 'Nombre y correo válido son obligatorios.' });
             }
 
+            // Validación de dirección
             const camposDireccion = [
                 datos.addressLine1,
                 datos.city,
@@ -68,8 +83,14 @@ class ControladorPerfil {
                 }
             }
 
-            const perfil = await ModeloPerfil.actualizarPerfil(datos);
-            req.session.usuario = ControladorPerfil.usuarioSesion(perfil);
+            const perfilActualizado = await ModeloPerfil.actualizarPerfil(datos);
+
+            // Preservar el rol previo si el modelo de perfil no devuelve el rol
+            const rolActual = req.session.usuario.Rol || req.session.usuario.role || 'cliente';
+            
+            // Reconstruir y actualizar la sesión de Express
+            req.session.usuario = ControladorPerfil.usuarioSesion(perfilActualizado, rolActual);
+
             return res.json({ message: 'Información actualizada correctamente.' });
         } catch (error) {
             console.error('ERROR AL ACTUALIZAR PERFIL:', error);
@@ -77,11 +98,16 @@ class ControladorPerfil {
         }
     }
 
+    // =====================================================
+    // CAMBIAR CONTRASEÑA
+    // =====================================================
     static async cambiarContrasena(req, res) {
         const { currentPassword, newPassword, confirmPassword } = req.body || {};
+
         if (!currentPassword || !newPassword || newPassword !== confirmPassword) {
             return res.status(400).json({ message: 'Verifica las contraseñas ingresadas.' });
         }
+
         if (newPassword.length < 8) {
             return res.status(400).json({ message: 'La contraseña debe tener mínimo 8 caracteres.' });
         }
@@ -89,11 +115,16 @@ class ControladorPerfil {
         try {
             const usuario = await AuthModel.buscarUsuarioPorEmail(req.session.usuario.EmailAddress);
             const valida = await ControladorPerfil.verificarContrasena(currentPassword, usuario);
-            if (!valida) return res.status(400).json({ message: 'La contraseña actual no es correcta.' });
+
+            if (!valida) {
+                return res.status(400).json({ message: 'La contraseña actual no es correcta.' });
+            }
 
             const salt = crypto.randomBytes(5).toString('hex');
             const hash = await ControladorPerfil.generarHashContrasena(newPassword, salt);
+
             await ModeloPerfil.actualizarContrasena(req.session.usuario.CustomerID, hash, salt);
+
             return res.json({ message: 'Contraseña cambiada correctamente.' });
         } catch (error) {
             console.error('ERROR AL CAMBIAR CONTRASEÑA:', error);
@@ -101,6 +132,9 @@ class ControladorPerfil {
         }
     }
 
+    // =====================================================
+    // FOTO DE PERFIL
+    // =====================================================
     static async guardarFotoPerfil(req, res) {
         const { foto } = req.body || {};
         const coincidencia = /^data:image\/(png|jpeg|jpg|gif);base64,([\s\S]+)$/.exec(foto || '');
@@ -113,6 +147,7 @@ class ControladorPerfil {
         try {
             const fotoBuffer = Buffer.from(coincidencia[2], 'base64');
             await ModeloPerfil.guardarFotoPerfil(req.session.usuario.CustomerID, fotoBuffer);
+
             return res.json({
                 message: 'Foto de perfil actualizada.',
                 foto: `data:image/${coincidencia[1] === 'jpeg' ? 'jpeg' : coincidencia[1]};base64,${coincidencia[2]}`
@@ -143,25 +178,41 @@ class ControladorPerfil {
         return null;
     }
 
+    // =====================================================
+    // HELPER - ENCRIPTACIÓN
+    // =====================================================
     static generarHashContrasena(password, salt) {
-        return new Promise((resolve, reject) => crypto.scrypt(password, salt, 64, (error, key) => error ? reject(error) : resolve(key.toString('hex'))));
+        return new Promise((resolve, reject) =>
+            crypto.scrypt(password, salt, 64, (error, key) => (error ? reject(error) : resolve(key.toString('hex'))))
+        );
     }
 
     static async verificarContrasena(password, usuario) {
         if (!usuario || !usuario.PasswordHash || !usuario.PasswordSalt) return false;
         const hash = await ControladorPerfil.generarHashContrasena(password, usuario.PasswordSalt);
-        return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(usuario.PasswordHash, 'hex'));
+        
+        const bufferCalculado = Buffer.from(hash, 'hex');
+        const bufferAlmacenado = Buffer.from(usuario.PasswordHash, 'hex');
+
+        if (bufferCalculado.length !== bufferAlmacenado.length) return false;
+
+        return crypto.timingSafeEqual(bufferCalculado, bufferAlmacenado);
     }
 
-    static usuarioSesion(usuario) {
+    // =====================================================
+    // HELPER - CONSTRUIR OBJ DE SESIÓN
+    // =====================================================
+    static usuarioSesion(usuario, rolExistente = 'cliente') {
+        const rolNormalizado = (usuario.Rol || usuario.role || rolExistente).toLowerCase();
+
         return {
             CustomerID: usuario.CustomerID,
             FirstName: usuario.FirstName,
             LastName: usuario.LastName,
             EmailAddress: usuario.EmailAddress,
             Phone: usuario.Phone,
-            Rol: usuario.Rol || 'cliente',
-            role: usuario.Rol || 'cliente'
+            Rol: rolNormalizado,
+            role: rolNormalizado
         };
     }
 }

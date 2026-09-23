@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const AuthModel = require('../models/authModel');
+const CarritoModel = require('../models/carritoModel'); // Importación añadida
 
 class AuthController {
 
@@ -118,7 +119,7 @@ class AuthController {
             const salt = AuthController.generarSalt();
             const passwordHash = await AuthController.generarHash(password, salt);
 
-            // GUARDAR USUARIO
+            // GUARDAR USUARIO EN BD
             const usuario = await AuthModel.registrarUsuario({
                 firstName: nombre,
                 lastName: apellido,
@@ -127,25 +128,32 @@ class AuthController {
                 passwordSalt: salt
             });
 
+            const rolDefinido = (usuario.Rol || usuario.role || 'cliente').toLowerCase();
+
             const datosUsuario = {
                 CustomerID: usuario.CustomerID,
-                FirstName: usuario.FirstName,
-                LastName: usuario.LastName,
-                EmailAddress: usuario.EmailAddress,
-                Rol: usuario.Rol || 'cliente',
-                role: usuario.Rol || 'cliente'
+                FirstName: usuario.FirstName || nombre,
+                LastName: usuario.LastName || apellido,
+                EmailAddress: usuario.EmailAddress || correo,
+                Rol: rolDefinido,
+                role: rolDefinido
             };
 
-            // Guardar en sesión express si existe
+            // Determinar la vista destino según el rol
+            const redirectUrl = rolDefinido === 'trabajador' ? '/inventario' : '/catalogo';
+
+            // Guardar en sesión express e inicializar carrito vacío
             if (req.session) {
                 req.session.usuario = datosUsuario;
+                req.session.carrito = [];
             }
 
             // RESPUESTA
             return res.status(201).json({
                 success: true,
                 message: 'Usuario registrado correctamente.',
-                usuario: datosUsuario
+                usuario: datosUsuario,
+                redirectUrl
             });
 
         } catch (error) {
@@ -162,7 +170,7 @@ class AuthController {
     // =====================================================
     static async login(req, res) {
         try {
-            const { email, password } = req.body;
+            const { email, password } = req.body || {};
 
             // VALIDAR CAMPOS
             if (!email || !password) {
@@ -199,26 +207,36 @@ class AuthController {
                 });
             }
 
-            // Mapeo del usuario con ambas propiedades (Rol y role) para prevenir incompatibilidades
+            // Mapeo normalizado del rol
+            const rolDefinido = (usuario.Rol || usuario.role || 'cliente').toLowerCase();
+
             const usuarioAutenticado = {
                 CustomerID: usuario.CustomerID,
                 FirstName: usuario.FirstName,
                 LastName: usuario.LastName,
                 EmailAddress: usuario.EmailAddress,
-                Rol: usuario.Rol || 'cliente',
-                role: usuario.Rol || 'cliente'
+                Rol: rolDefinido,
+                role: rolDefinido
             };
 
-            // GUARDAR EN SESIÓN EXPRESS DE BACKEND
+            // Determinar a qué vista enviar al usuario según su rol
+            const redirectUrl = rolDefinido === 'trabajador' ? '/inventario' : '/catalogo';
+
+            // GUARDAR USUARIO Y CARGAR SU CARRITO GUARDADO DESDE LA BD
             if (req.session) {
                 req.session.usuario = usuarioAutenticado;
+                
+                // Carga los productos guardados previamente en SQL Server
+                const carritoBD = await CarritoModel.obtenerCarritoDeBD(usuario.CustomerID);
+                req.session.carrito = carritoBD || [];
             }
 
             // RESPUESTA
             return res.status(200).json({
                 success: true,
                 message: 'Inicio de sesión exitoso.',
-                usuario: usuarioAutenticado
+                usuario: usuarioAutenticado,
+                redirectUrl
             });
 
         } catch (error) {
@@ -227,6 +245,52 @@ class AuthController {
                 success: false,
                 message: 'Error interno del servidor.'
             });
+        }
+    }
+
+    // =====================================================
+    // CERRAR SESIÓN
+    // =====================================================
+    static async logout(req, res) {
+        if (req.session) {
+            try {
+                // Si hay un usuario en sesión y un carrito, guardamos en la BD antes de salir
+                if (req.session.usuario && req.session.carrito) {
+                    await CarritoModel.guardarCarritoEnBD(
+                        req.session.usuario.CustomerID,
+                        req.session.carrito
+                    );
+                }
+            } catch (error) {
+                console.error('Error al guardar el carrito antes de cerrar sesión:', error);
+            }
+
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error('Error al destruir la sesión:', err);
+                    if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
+                        return res.status(500).json({ success: false, message: 'No se pudo cerrar la sesión.' });
+                    }
+                    return res.status(500).send('No se pudo cerrar la sesión.');
+                }
+
+                // Limpiar cookie de sesión express
+                res.clearCookie('connect.sid', { path: '/' });
+
+                // Si la petición vino por AJAX / Fetch
+                if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Sesión cerrada correctamente.',
+                        redirectUrl: '/login?mensaje=sesion_cerrada'
+                    });
+                }
+
+                // Si fue una navegación web directa (GET /logout)
+                return res.redirect('/login?mensaje=sesion_cerrada');
+            });
+        } else {
+            return res.redirect('/login');
         }
     }
 }
