@@ -103,6 +103,7 @@ class CarritoModel {
 
             // =================================================
             // AGREGAR PRODUCTOS DEL CARRITO
+            // Y DISMINUIR STOCK
             // =================================================
 
             let subtotal = 0;
@@ -135,6 +136,10 @@ class CarritoModel {
 
                 subtotal += lineTotal;
 
+
+                // =================================================
+                // INSERTAR PRODUCTO EN EL PEDIDO
+                // =================================================
 
                 await transaction
                     .request()
@@ -190,6 +195,56 @@ class CarritoModel {
                         );
 
                     `);
+
+
+                // =================================================
+                // DISMINUIR STOCK
+                // =================================================
+
+                const stockResult = await transaction
+                    .request()
+
+                    .input(
+                        'ProductID',
+                        sql.Int,
+                        item.productId
+                    )
+
+                    .input(
+                        'Cantidad',
+                        sql.Int,
+                        item.cantidad
+                    )
+
+                    .query(`
+
+                        UPDATE SalesLT.Product
+
+                        SET Stock = Stock - @Cantidad
+
+                        WHERE ProductID = @ProductID
+                          AND Stock >= @Cantidad;
+
+                        SELECT @@ROWCOUNT AS FilasActualizadas;
+
+                    `);
+
+
+                // =================================================
+                // COMPROBAR QUE HABÍA STOCK SUFICIENTE
+                // =================================================
+
+                const filasActualizadas =
+                    stockResult.recordset[0].FilasActualizadas;
+
+
+                if (filasActualizadas === 0) {
+
+                    throw new Error(
+                        `Stock insuficiente para el producto ${item.productId}`
+                    );
+
+                }
 
             }
 
