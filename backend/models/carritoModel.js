@@ -136,16 +136,84 @@ class CarritoModel {
                     SELECT SCOPE_IDENTITY() AS SalesOrderID;
                 `);
 
-            const salesOrderId = pedidoResult.recordset[0].SalesOrderID;
 
-            // 3. Insertar detalle de productos (SalesOrderDetail)
-            for (const item of detallesItems) {
-                await transaction.request()
-                    .input('SalesOrderID', sql.Int, salesOrderId)
-                    .input('OrderQty', sql.SmallInt, item.cantidad)
-                    .input('ProductID', sql.Int, item.productId)
-                    .input('UnitPrice', sql.Money, item.unitPrice)
-                    .input('UnitPriceDiscount', sql.Money, 0)
+            const salesOrderId =
+                pedido.recordset[0].SalesOrderID;
+
+
+            // =================================================
+            // AGREGAR PRODUCTOS DEL CARRITO
+            // Y DISMINUIR STOCK
+            // =================================================
+
+            let subtotal = 0;
+
+
+            for (const item of carrito) {
+
+                const producto =
+                    await CatalogoModel.obtenerProductoPorId(
+                        item.productId
+                    );
+
+
+                if (!producto) {
+
+                    throw new Error(
+                        `Producto ${item.productId} no encontrado`
+                    );
+
+                }
+
+
+                const unitPrice =
+                    Number(producto.ListPrice);
+
+
+                const lineTotal =
+                    unitPrice * item.cantidad;
+
+
+                subtotal += lineTotal;
+
+
+                // =================================================
+                // INSERTAR PRODUCTO EN EL PEDIDO
+                // =================================================
+
+                await transaction
+                    .request()
+
+                    .input(
+                        'SalesOrderID',
+                        sql.Int,
+                        salesOrderId
+                    )
+
+                    .input(
+                        'OrderQty',
+                        sql.SmallInt,
+                        item.cantidad
+                    )
+
+                    .input(
+                        'ProductID',
+                        sql.Int,
+                        item.productId
+                    )
+
+                    .input(
+                        'UnitPrice',
+                        sql.Money,
+                        unitPrice
+                    )
+
+                    .input(
+                        'UnitPriceDiscount',
+                        sql.Money,
+                        0
+                    )
+
                     .query(`
                         INSERT INTO SalesLT.SalesOrderDetail (
                             SalesOrderID,
@@ -162,6 +230,57 @@ class CarritoModel {
                             @UnitPriceDiscount
                         );
                     `);
+
+
+                // =================================================
+                // DISMINUIR STOCK
+                // =================================================
+
+                const stockResult = await transaction
+                    .request()
+
+                    .input(
+                        'ProductID',
+                        sql.Int,
+                        item.productId
+                    )
+
+                    .input(
+                        'Cantidad',
+                        sql.Int,
+                        item.cantidad
+                    )
+
+                    .query(`
+
+                        UPDATE SalesLT.Product
+
+                        SET Stock = Stock - @Cantidad
+
+                        WHERE ProductID = @ProductID
+                          AND Stock >= @Cantidad;
+
+                        SELECT @@ROWCOUNT AS FilasActualizadas;
+
+                    `);
+
+
+                // =================================================
+                // COMPROBAR QUE HABÍA STOCK SUFICIENTE
+                // =================================================
+
+                const filasActualizadas =
+                    stockResult.recordset[0].FilasActualizadas;
+
+
+                if (filasActualizadas === 0) {
+
+                    throw new Error(
+                        `Stock insuficiente para el producto ${item.productId}`
+                    );
+
+                }
+
             }
 
             // 4. Confirmar la transacción
