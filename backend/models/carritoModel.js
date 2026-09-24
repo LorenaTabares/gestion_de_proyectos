@@ -3,6 +3,7 @@ const CatalogoModel = require('./catalogoModel');
 
 class CarritoModel {
 
+    
     // =====================================================
     // OBTENER PRODUCTO POR ID
     // =====================================================
@@ -341,5 +342,7 @@ class CarritoModel {
     }
 }
 
-module.exports = CarritoModel;
+module.exports = CarritoModel; 
+
+
 
