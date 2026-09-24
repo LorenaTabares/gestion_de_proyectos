@@ -54,8 +54,8 @@ class ControladorPerfil {
                 postalCode: String(req.body.postalCode || '').trim() || actual.PostalCode || ''
             };
 
-            if (datos.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
-                return res.status(400).json({ message: 'El correo electrónico no tiene un formato válido.' });
+            if (!datos.firstName || !datos.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
+                return res.status(400).json({ message: 'Nombre y correo válido son obligatorios.' });
             }
 
             // Validación de dirección
