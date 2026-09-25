@@ -11,21 +11,31 @@
     >
 
     <title>Inventario - AdventureWorks</title>
+
     <link rel="stylesheet" href="../css/navbar.css">
     <link rel="stylesheet" href="../css/inventario.css">
     <link rel="stylesheet" href="../css/footer.css">
 
     <!-- =====================================================
-         CONTROL DE ACCESO FRONTEND (DENTRO DEL HEAD)
+         CONTROL DE ACCESO FRONTEND
     ====================================================== -->
     <script>
         (function bloquearAcceso() {
-            const usuarioGuardado = JSON.parse(sessionStorage.getItem('usuario'));
 
-            if (!usuarioGuardado || usuarioGuardado.role !== 'trabajador') {
-                alert('Acceso denegado: Esta sección es exclusiva para personal de bodega.');
+            const usuarioGuardado =
+                JSON.parse(sessionStorage.getItem('usuario'));
+
+            if (
+                !usuarioGuardado ||
+                usuarioGuardado.role !== 'trabajador'
+            ) {
+                alert(
+                    'Acceso denegado: Esta sección es exclusiva para personal de bodega.'
+                );
+
                 window.location.assign('/catalogo');
             }
+
         })();
     </script>
 
@@ -34,8 +44,8 @@
 
 <body>
 
-
     <!-- NAVBAR -->
+
     <%- include('../../components/navbar.ejs') %>
 
 
@@ -44,7 +54,6 @@
     ====================================== -->
 
     <main>
-
 
         <div class="inventario-titulo">
 
@@ -56,7 +65,6 @@
             </p>
 
         </div>
-
 
 
         <div class="tablero">
@@ -71,15 +79,20 @@
             >
 
                 <h2>
+
                     Pendiente
+
                     (<%= pedidosPorEstado.pendiente.length %>)
+
                 </h2>
 
 
                 <% if (pedidosPorEstado.pendiente.length === 0) { %>
 
                     <div class="sin-pedidos">
+
                         No hay pedidos pendientes.
+
                     </div>
 
                 <% } %>
@@ -87,22 +100,24 @@
 
                 <% pedidosPorEstado.pendiente.forEach(pedido => { %>
 
-
                     <div class="pedido-card">
 
 
                         <div class="pedido-header">
 
                             <span class="pedido-id">
+
                                 Pedido #<%= pedido.SalesOrderID %>
+
                             </span>
 
                             <span class="pedido-fecha">
+
                                 <%= pedido.OrderDate %>
+
                             </span>
 
                         </div>
-
 
 
                         <!-- PRODUCTOS DESPLEGABLE -->
@@ -112,8 +127,11 @@
                         >
 
                             <summary>
+
                                 Ver productos
+
                                 (<%= pedido.productos.length %>)
+
                             </summary>
 
 
@@ -125,18 +143,45 @@
                                     <div class="producto">
 
                                         <div class="producto-nombre">
+
                                             <%= producto.Name %>
+
                                         </div>
+
 
                                         <div class="producto-info">
 
                                             Código:
+
                                             <%= producto.ProductNumber %>
 
                                             &nbsp; | &nbsp;
 
-                                            Cantidad:
+                                            Cantidad pedida:
+
                                             <%= producto.OrderQty %>
+
+                                        </div>
+
+
+                                        <!-- STOCK RESTANTE -->
+
+                                        <div class="producto-stock
+                                            <%= producto.Stock <= 5
+                                                ? 'stock-rojo'
+                                                : producto.Stock <= 20
+                                                    ? 'stock-amarillo'
+                                                    : producto.Stock <= 50
+                                                        ? 'stock-verde'
+                                                        : '' %>">
+
+                                            Stock restante:
+
+                                            <strong>
+                                                <%= producto.Stock %>
+                                            </strong>
+
+                                            unidades
 
                                         </div>
 
@@ -150,13 +195,14 @@
                         </details>
 
 
-
                         <!-- ESTADO SIEMPRE VISIBLE -->
 
                         <div class="pedido-estado">
 
                             <label>
+
                                 Estado del pedido:
+
                             </label>
 
 
@@ -206,12 +252,10 @@
 
                     </div>
 
-
                 <% }); %>
 
 
             </section>
-
 
 
             <!-- =================================
@@ -223,15 +267,20 @@
             >
 
                 <h2>
+
                     En proceso
+
                     (<%= pedidosPorEstado.proceso.length %>)
+
                 </h2>
 
 
                 <% if (pedidosPorEstado.proceso.length === 0) { %>
 
                     <div class="sin-pedidos">
+
                         No hay pedidos en proceso.
+
                     </div>
 
                 <% } %>
@@ -239,31 +288,38 @@
 
                 <% pedidosPorEstado.proceso.forEach(pedido => { %>
 
-
                     <div class="pedido-card">
 
 
                         <div class="pedido-header">
 
                             <span class="pedido-id">
+
                                 Pedido #<%= pedido.SalesOrderID %>
+
                             </span>
 
                             <span class="pedido-fecha">
+
                                 <%= pedido.OrderDate %>
+
                             </span>
 
                         </div>
 
 
+                        <!-- PRODUCTOS DESPLEGABLE -->
 
                         <details
                             class="productos-desplegable"
                         >
 
                             <summary>
+
                                 Ver productos
+
                                 (<%= pedido.productos.length %>)
+
                             </summary>
 
 
@@ -274,18 +330,45 @@
                                     <div class="producto">
 
                                         <div class="producto-nombre">
+
                                             <%= producto.Name %>
+
                                         </div>
+
 
                                         <div class="producto-info">
 
                                             Código:
+
                                             <%= producto.ProductNumber %>
 
                                             &nbsp; | &nbsp;
 
-                                            Cantidad:
+                                            Cantidad pedida:
+
                                             <%= producto.OrderQty %>
+
+                                        </div>
+
+
+                                        <!-- STOCK RESTANTE -->
+
+                                        <div class="producto-stock
+                                            <%= producto.Stock <= 5
+                                                ? 'stock-rojo'
+                                                : producto.Stock <= 20
+                                                    ? 'stock-amarillo'
+                                                    : producto.Stock <= 50
+                                                        ? 'stock-verde'
+                                                        : '' %>">
+
+                                            Stock restante:
+
+                                            <strong>
+                                                <%= producto.Stock %>
+                                            </strong>
+
+                                            unidades
 
                                         </div>
 
@@ -298,13 +381,14 @@
                         </details>
 
 
-
                         <!-- ESTADO VISIBLE -->
 
                         <div class="pedido-estado">
 
                             <label>
+
                                 Estado del pedido:
+
                             </label>
 
 
@@ -354,12 +438,10 @@
 
                     </div>
 
-
                 <% }); %>
 
 
             </section>
-
 
 
             <!-- =================================
@@ -371,15 +453,20 @@
             >
 
                 <h2>
+
                     Despachado
+
                     (<%= pedidosPorEstado.despachado.length %>)
+
                 </h2>
 
 
                 <% if (pedidosPorEstado.despachado.length === 0) { %>
 
                     <div class="sin-pedidos">
+
                         No hay pedidos despachados.
+
                     </div>
 
                 <% } %>
@@ -387,31 +474,38 @@
 
                 <% pedidosPorEstado.despachado.forEach(pedido => { %>
 
-
                     <div class="pedido-card">
 
 
                         <div class="pedido-header">
 
                             <span class="pedido-id">
+
                                 Pedido #<%= pedido.SalesOrderID %>
+
                             </span>
 
                             <span class="pedido-fecha">
+
                                 <%= pedido.OrderDate %>
+
                             </span>
 
                         </div>
 
 
+                        <!-- PRODUCTOS DESPLEGABLE -->
 
                         <details
                             class="productos-desplegable"
                         >
 
                             <summary>
+
                                 Ver productos
+
                                 (<%= pedido.productos.length %>)
+
                             </summary>
 
 
@@ -422,18 +516,45 @@
                                     <div class="producto">
 
                                         <div class="producto-nombre">
+
                                             <%= producto.Name %>
+
                                         </div>
+
 
                                         <div class="producto-info">
 
                                             Código:
+
                                             <%= producto.ProductNumber %>
 
                                             &nbsp; | &nbsp;
 
-                                            Cantidad:
+                                            Cantidad pedida:
+
                                             <%= producto.OrderQty %>
+
+                                        </div>
+
+
+                                        <!-- STOCK RESTANTE -->
+
+                                        <div class="producto-stock
+                                            <%= producto.Stock <= 5
+                                                ? 'stock-rojo'
+                                                : producto.Stock <= 20
+                                                    ? 'stock-amarillo'
+                                                    : producto.Stock <= 50
+                                                        ? 'stock-verde'
+                                                        : '' %>">
+
+                                            Stock restante:
+
+                                            <strong>
+                                                <%= producto.Stock %>
+                                            </strong>
+
+                                            unidades
 
                                         </div>
 
@@ -446,13 +567,14 @@
                         </details>
 
 
-
                         <!-- ESTADO VISIBLE -->
 
                         <div class="pedido-estado">
 
                             <label>
+
                                 Estado del pedido:
+
                             </label>
 
 
@@ -502,12 +624,10 @@
 
                     </div>
 
-
                 <% }); %>
 
 
             </section>
-
 
 
             <!-- =================================
@@ -519,15 +639,20 @@
             >
 
                 <h2>
+
                     Cancelado
+
                     (<%= pedidosPorEstado.cancelado.length %>)
+
                 </h2>
 
 
                 <% if (pedidosPorEstado.cancelado.length === 0) { %>
 
                     <div class="sin-pedidos">
+
                         No hay pedidos cancelados.
+
                     </div>
 
                 <% } %>
@@ -535,31 +660,38 @@
 
                 <% pedidosPorEstado.cancelado.forEach(pedido => { %>
 
-
                     <div class="pedido-card">
 
 
                         <div class="pedido-header">
 
                             <span class="pedido-id">
+
                                 Pedido #<%= pedido.SalesOrderID %>
+
                             </span>
 
                             <span class="pedido-fecha">
+
                                 <%= pedido.OrderDate %>
+
                             </span>
 
                         </div>
 
 
+                        <!-- PRODUCTOS DESPLEGABLE -->
 
                         <details
                             class="productos-desplegable"
                         >
 
                             <summary>
+
                                 Ver productos
+
                                 (<%= pedido.productos.length %>)
+
                             </summary>
 
 
@@ -570,18 +702,45 @@
                                     <div class="producto">
 
                                         <div class="producto-nombre">
+
                                             <%= producto.Name %>
+
                                         </div>
+
 
                                         <div class="producto-info">
 
                                             Código:
+
                                             <%= producto.ProductNumber %>
 
                                             &nbsp; | &nbsp;
 
-                                            Cantidad:
+                                            Cantidad pedida:
+
                                             <%= producto.OrderQty %>
+
+                                        </div>
+
+
+                                        <!-- STOCK RESTANTE -->
+
+                                        <div class="producto-stock
+                                            <%= producto.Stock <= 5
+                                                ? 'stock-rojo'
+                                                : producto.Stock <= 20
+                                                    ? 'stock-amarillo'
+                                                    : producto.Stock <= 50
+                                                        ? 'stock-verde'
+                                                        : '' %>">
+
+                                            Stock restante:
+
+                                            <strong>
+                                                <%= producto.Stock %>
+                                            </strong>
+
+                                            unidades
 
                                         </div>
 
@@ -594,13 +753,14 @@
                         </details>
 
 
-
                         <!-- ESTADO VISIBLE -->
 
                         <div class="pedido-estado">
 
                             <label>
+
                                 Estado del pedido:
+
                             </label>
 
 
@@ -650,7 +810,6 @@
 
                     </div>
 
-
                 <% }); %>
 
 
@@ -661,8 +820,11 @@
 
     </main>
 
+
     <!-- FOOTER -->
+
     <%- include('../../components/footer.ejs') %>
+
 
 </body>
 

@@ -1,425 +1,496 @@
 * {
-            box-sizing: border-box;
-        }
+    box-sizing: border-box;
+}
 
 
-        body {
+body {
 
-            margin: 0;
+    margin: 0;
 
-            min-height: 100vh;
+    min-height: 100vh;
 
-            display: flex;
+    display: flex;
 
-            flex-direction: column;
+    flex-direction: column;
 
-            font-family: Arial, sans-serif;
+    font-family: Arial, sans-serif;
 
-            background-color: #f4f6f8;
+    background-color: #f4f6f8;
 
-            color: #333;
-        }
+    color: #333;
+}
 
 
-        main {
+main {
 
-            flex: 1;
+    flex: 1;
 
-            padding: 30px;
-        }
+    padding: 30px;
+}
 
 
-        /* =====================================
-           TITULO
-        ===================================== */
+/* =====================================
+   TITULO
+===================================== */
 
-        .inventario-titulo {
+.inventario-titulo {
 
-            margin-bottom: 25px;
+    margin-bottom: 25px;
 
-            text-align: center;
-        }
+    text-align: center;
+}
 
 
-        .inventario-titulo h1 {
+.inventario-titulo h1 {
 
-            margin: 0 0 8px 0;
+    margin: 0 0 8px 0;
 
-            font-size: 30px;
+    font-size: 30px;
 
-            color: #333;
-        }
+    color: #333;
+}
 
 
-        .inventario-titulo p {
+.inventario-titulo p {
 
-            margin: 0;
+    margin: 0;
 
-            color: #666;
+    color: #666;
 
-            font-size: 15px;
-        }
+    font-size: 15px;
+}
 
 
-        /* =====================================
-           TABLERO
-        ===================================== */
+/* =====================================
+   TABLERO
+===================================== */
 
-        .tablero {
+.tablero {
 
-            display: grid;
+    display: grid;
 
-            grid-template-columns:
-                repeat(4, 1fr);
+    grid-template-columns:
+        repeat(4, 1fr);
 
-            gap: 20px;
+    gap: 20px;
 
-            align-items: start;
-        }
+    align-items: start;
+}
 
 
-        /* =====================================
-           COLUMNAS
-        ===================================== */
+/* =====================================
+   COLUMNAS
+===================================== */
 
-        .columna {
+.columna {
 
-            background-color: #e9ecef;
+    background-color: #e9ecef;
 
-            border-radius: 12px;
+    border-radius: 12px;
 
-            padding: 15px;
+    padding: 15px;
 
-            min-height: 300px;
-        }
+    min-height: 300px;
+}
 
-        .columna-pendiente{
-            background-color: #f882757c;
-        }
+.columna-pendiente{
+    background-color: #f882757c;
+}
 
-        .columna-proceso{
-            background-color: #ebc17c8a;
-        }
+.columna-proceso{
+    background-color: #ebc17c8a;
+}
 
-        .columna-despachado{
-            background-color: #8fecb385;
-        }
+.columna-despachado{
+    background-color: #8fecb385;
+}
 
-        .columna-cancelado{
-            background-color: #a4a4a487;
-        }
+.columna-cancelado{
+    background-color: #a4a4a487;
+}
 
 
-        .columna h2 {
+.columna h2 {
 
-            margin: 0 0 15px 0;
+    margin: 0 0 15px 0;
 
-            font-size: 18px;
+    font-size: 18px;
 
-            text-align: center;
+    text-align: center;
 
-            padding-bottom: 12px;
+    padding-bottom: 12px;
 
-            border-bottom: 2px solid #ddd;
-        }
+    border-bottom: 2px solid #ddd;
+}
 
 
-        .columna-pendiente h2 {
-            color: #c0392b;
-        }
+.columna-pendiente h2 {
+    color: #c0392b;
+}
 
 
-        .columna-proceso h2 {
-            color: #d68910;
-        }
+.columna-proceso h2 {
+    color: #d68910;
+}
 
 
-        .columna-despachado h2 {
-            color: #278b4d;
-        }
+.columna-despachado h2 {
+    color: #278b4d;
+}
 
 
-        .columna-cancelado h2 {
-            color: #666;
-        }
+.columna-cancelado h2 {
+    color: #666;
+}
 
 
-        /* =====================================
-           TARJETA DEL PEDIDO
-        ===================================== */
+/* =====================================
+   TARJETA DEL PEDIDO
+===================================== */
 
-        .pedido-card {
+.pedido-card {
 
-            background-color: white;
+    background-color: white;
 
-            border-radius: 10px;
+    border-radius: 10px;
 
-            margin-bottom: 15px;
+    margin-bottom: 15px;
 
-            padding: 16px;
+    padding: 16px;
 
-            box-shadow:
-                0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.08);
 
-            border-left: 5px solid #ccc;
-        }
+    border-left: 5px solid #ccc;
+}
 
 
-        .columna-pendiente .pedido-card {
+.columna-pendiente .pedido-card {
 
-            border-left-color: #e74c3c;
-        }
+    border-left-color: #e74c3c;
+}
 
 
-        .columna-proceso .pedido-card {
+.columna-proceso .pedido-card {
 
-            border-left-color: #f1c40f;
-        }
+    border-left-color: #f1c40f;
+}
 
 
-        .columna-despachado .pedido-card {
+.columna-despachado .pedido-card {
 
-            border-left-color: #2ecc71;
-        }
+    border-left-color: #2ecc71;
+}
 
 
-        .columna-cancelado .pedido-card {
+.columna-cancelado .pedido-card {
 
-            border-left-color: #7f8c8d;
-        }
+    border-left-color: #7f8c8d;
+}
 
 
-        /* =====================================
-           INFORMACION DEL PEDIDO
-        ===================================== */
+/* =====================================
+   INFORMACION DEL PEDIDO
+===================================== */
 
-        .pedido-header {
+.pedido-header {
 
-            display: flex;
+    display: flex;
 
-            justify-content: space-between;
+    justify-content: space-between;
 
-            align-items: center;
+    align-items: center;
 
-            margin-bottom: 8px;
-        }
+    margin-bottom: 8px;
+}
 
 
-        .pedido-id {
+.pedido-id {
 
-            font-size: 17px;
+    font-size: 17px;
 
-            font-weight: bold;
+    font-weight: bold;
 
-            color: #333;
-        }
+    color: #333;
+}
 
 
-        .pedido-fecha {
+.pedido-fecha {
 
-            font-size: 13px;
+    font-size: 13px;
 
-            color: #777;
-        }
+    color: #777;
+}
 
 
-        /* =====================================
-           DESPLEGABLE DE PRODUCTOS
-        ===================================== */
+/* =====================================
+   DESPLEGABLE DE PRODUCTOS
+===================================== */
 
-        .productos-desplegable {
+.productos-desplegable {
 
-            margin-top: 12px;
+    margin-top: 12px;
 
-            border-top: 1px solid #eee;
+    border-top: 1px solid #eee;
 
-            border-bottom: 1px solid #eee;
-        }
+    border-bottom: 1px solid #eee;
+}
 
 
-        .productos-desplegable summary {
+.productos-desplegable summary {
 
-            cursor: pointer;
+    cursor: pointer;
 
-            list-style: none;
+    list-style: none;
 
-            padding: 12px 4px;
+    padding: 12px 4px;
 
-            font-weight: bold;
+    font-weight: bold;
 
-            font-size: 14px;
+    font-size: 14px;
 
-            color: #555;
+    color: #555;
 
-            display: flex;
+    display: flex;
 
-            align-items: center;
+    align-items: center;
 
-            gap: 8px;
+    gap: 8px;
 
-            user-select: none;
-        }
+    user-select: none;
+}
 
 
-        /* Ocultar la flecha original */
-        .productos-desplegable summary::-webkit-details-marker {
+/* Ocultar la flecha original */
+.productos-desplegable summary::-webkit-details-marker {
 
-            display: none;
-        }
+    display: none;
+}
 
 
-        /* Nuestra flechita */
-        .productos-desplegable summary::before {
+/* Nuestra flechita */
+.productos-desplegable summary::before {
 
-            content: "▶";
+    content: "▶";
 
-            font-size: 11px;
+    font-size: 11px;
 
-            transition: transform 0.2s ease;
-        }
+    transition: transform 0.2s ease;
+}
 
 
-        /* Cuando está abierto */
-        .productos-desplegable[open]
-        summary::before {
+/* Cuando está abierto */
+.productos-desplegable[open]
+summary::before {
 
-            transform: rotate(90deg);
-        }
+    transform: rotate(90deg);
+}
 
 
-        .lista-productos {
+.lista-productos {
 
-            padding: 0 4px 10px 4px;
-        }
+    padding: 0 4px 10px 4px;
+}
 
 
-        .producto {
+.producto {
 
-            padding: 9px 0;
+    padding: 9px 0;
 
-            border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
 
-            font-size: 13px;
-        }
+    font-size: 13px;
+}
 
 
-        .producto:last-child {
+.producto:last-child {
 
-            border-bottom: none;
-        }
+    border-bottom: none;
+}
 
 
-        .producto-nombre {
+.producto-nombre {
 
-            font-weight: bold;
+    font-weight: bold;
 
-            margin-bottom: 3px;
-        }
+    margin-bottom: 3px;
+}
 
 
-        .producto-info {
+.producto-info {
 
-            color: #777;
+    color: #777;
 
-            font-size: 12px;
-        }
+    font-size: 12px;
+}
 
 
-        /* =====================================
-           ESTADO
-        ===================================== */
+/* =====================================
+   STOCK RESTANTE
+===================================== */
 
-        .pedido-estado {
+.producto-stock {
 
-            margin-top: 14px;
-        }
+    margin-top: 8px;
 
+    padding: 6px 10px;
 
-        .pedido-estado label {
+    border-radius: 6px;
 
-            display: block;
+    font-size: 14px;
 
-            margin-bottom: 6px;
+    font-weight: 600;
 
-            font-size: 13px;
+    display: inline-block;
+}
 
-            font-weight: bold;
 
-            color: #555;
-        }
+.producto-stock strong {
 
+    font-size: 16px;
+}
 
-        .estado-pedido {
 
-            width: 100%;
+/* =====================================
+   STOCK CRITICO - 0 A 5
+   ROJO
+===================================== */
 
-            padding: 9px 10px;
+.stock-rojo {
 
-            border-radius: 6px;
+    background-color: #ffdddd;
 
-            border: 1px solid #ccc;
+    color: #b30000;
 
-            background-color: white;
+    border: 1px solid #ff9999;
+}
 
-            font-size: 13px;
 
-            cursor: pointer;
-        }
+/* =====================================
+   STOCK BAJO - 6 A 20
+   AMARILLO
+===================================== */
 
+.stock-amarillo {
 
-        .estado-pedido:focus {
+    background-color: #fff3cd;
 
-            outline: none;
+    color: #856404;
 
-            border-color: #777;
-        }
+    border: 1px solid #ffe08a;
+}
 
 
-        /* =====================================
-           CUANDO NO HAY PEDIDOS
-        ===================================== */
+/* =====================================
+   STOCK DISPONIBLE - 21 A 50
+   VERDE
+===================================== */
 
-        .sin-pedidos {
+.stock-verde {
 
-            text-align: center;
+    background-color: #d4edda;
 
-            color: #888;
+    color: #155724;
 
-            font-size: 13px;
+    border: 1px solid #9ad6a5;
+}
 
-            padding: 20px 5px;
-        }
 
+/* =====================================
+   ESTADO
+===================================== */
 
-        /* =====================================
-           RESPONSIVE
-        ===================================== */
+.pedido-estado {
 
-        @media (max-width: 1100px) {
+    margin-top: 14px;
+}
 
-            .tablero {
 
-                grid-template-columns:
-                    repeat(2, 1fr);
+.pedido-estado label {
 
-            }
+    display: block;
 
-        }
+    margin-bottom: 6px;
 
+    font-size: 13px;
 
-        @media (max-width: 650px) {
+    font-weight: bold;
 
-            main {
+    color: #555;
+}
 
-                padding: 15px;
 
-            }
+.estado-pedido {
 
+    width: 100%;
 
-            .tablero {
+    padding: 9px 10px;
 
-                grid-template-columns: 1fr;
+    border-radius: 6px;
 
-            }
+    border: 1px solid #ccc;
 
-        }
+    background-color: white;
+
+    font-size: 13px;
+
+    cursor: pointer;
+}
+
+
+.estado-pedido:focus {
+
+    outline: none;
+
+    border-color: #777;
+}
+
+
+/* =====================================
+   CUANDO NO HAY PEDIDOS
+===================================== */
+
+.sin-pedidos {
+
+    text-align: center;
+
+    color: #888;
+
+    font-size: 13px;
+
+    padding: 20px 5px;
+}
+
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media (max-width: 1100px) {
+
+    .tablero {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    main {
+
+        padding: 15px;
+
+    }
+
+
+    .tablero {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}

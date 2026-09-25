@@ -3,7 +3,7 @@ const { obtenerConexion, sql } = require('../conexion');
 class InventarioModel {
 
     // =====================================================
-    // OBTENER TODOS LOS PEDIDOS CON SUS PRODUCTOS
+    // OBTENER TODOS LOS PEDIDOS CON SUS PRODUCTOS Y STOCK
     // =====================================================
     static async obtenerPedidos() {
         try {
@@ -17,7 +17,8 @@ class InventarioModel {
                     d.ProductID,
                     d.OrderQty,
                     p.Name,
-                    p.ProductNumber
+                    p.ProductNumber,
+                    ISNULL(p.Stock, 0) AS Stock
                 FROM SalesLT.SalesOrderHeader h
                 INNER JOIN SalesLT.SalesOrderDetail d 
                     ON h.SalesOrderID = d.SalesOrderID
@@ -26,32 +27,44 @@ class InventarioModel {
                 ORDER BY h.OrderDate DESC, h.SalesOrderID DESC;
             `);
 
-            // Mapear y agrupar los detalles de productos por cada Pedido
+            // Mapear y agrupar los detalles de productos por cada pedido
             const pedidosMap = new Map();
 
             result.recordset.forEach(row => {
+
                 if (!pedidosMap.has(row.SalesOrderID)) {
+
                     pedidosMap.set(row.SalesOrderID, {
                         SalesOrderID: row.SalesOrderID,
                         OrderDate: row.OrderDate,
                         Status: row.Status,
                         productos: []
                     });
+
                 }
 
                 pedidosMap.get(row.SalesOrderID).productos.push({
+
                     ProductID: row.ProductID,
                     Name: row.Name,
                     ProductNumber: row.ProductNumber,
-                    OrderQty: row.OrderQty
+                    OrderQty: row.OrderQty,
+                    Stock: row.Stock
+
                 });
+
             });
 
             // Convertir el Map a un array de pedidos
             return Array.from(pedidosMap.values());
 
         } catch (error) {
-            console.error('ERROR SQL OBTENER PEDIDOS INVENTARIO:', error);
+
+            console.error(
+                'ERROR SQL OBTENER PEDIDOS INVENTARIO:',
+                error
+            );
+
             throw error;
         }
     }
@@ -61,13 +74,23 @@ class InventarioModel {
     // ACTUALIZAR ESTADO DEL PEDIDO
     // =====================================================
     static async actualizarEstadoPedido(salesOrderID, status) {
+
         try {
+
             const pool = await obtenerConexion();
 
             await pool
                 .request()
-                .input('salesOrderID', sql.Int, salesOrderID)
-                .input('status', sql.TinyInt, status)
+                .input(
+                    'salesOrderID',
+                    sql.Int,
+                    salesOrderID
+                )
+                .input(
+                    'status',
+                    sql.TinyInt,
+                    status
+                )
                 .query(`
                     UPDATE SalesLT.SalesOrderHeader
                     SET Status = @status,
@@ -78,7 +101,12 @@ class InventarioModel {
             return true;
 
         } catch (error) {
-            console.error('ERROR SQL ACTUALIZAR ESTADO PEDIDO:', error);
+
+            console.error(
+                'ERROR SQL ACTUALIZAR ESTADO PEDIDO:',
+                error
+            );
+
             throw error;
         }
     }

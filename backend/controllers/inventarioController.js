@@ -1,4 +1,4 @@
-// Asegurar la coincidencia exactas de mayúsculas/minúsculas del archivo
+// Asegurar la coincidencia exacta de mayúsculas/minúsculas del archivo
 const InventarioModel = require('../models/inventarioModel');
 
 // ==========================================
@@ -6,7 +6,7 @@ const InventarioModel = require('../models/inventarioModel');
 // ==========================================
 const mostrarInventario = async (req, res) => {
   try {
-    // El modelo ya devuelve el arreglo de pedidos agrupados con sus productos
+    // El modelo devuelve los pedidos agrupados con sus productos y stock
     const pedidos = await InventarioModel.obtenerPedidos();
 
     // --------------------------------------
@@ -48,7 +48,7 @@ const cambiarEstado = async (req, res) => {
       return res.status(400).send('Datos de estado inválidos.');
     }
 
-    // Llama al método del modelo con el nombre correcto
+    // Actualizar estado del pedido
     await InventarioModel.actualizarEstadoPedido(salesOrderID, status);
 
     // Volver a cargar el inventario
