@@ -14,6 +14,7 @@ const app = express();
 
 console.log('INDEX.JS EJECUTÁNDOSE CON INTEGRACIÓN COMPLETA');
 
+
 // =====================================================
 // MIDDLEWARES DE PARSEO Y SESIÓN
 // =====================================================
@@ -75,7 +76,7 @@ const requerirTrabajador = (req, res, next) => {
 // =====================================================
 // ARCHIVOS ESTÁTICOS
 // =====================================================
-app.use(express.static(path.join(__dirname, '../Frontend')));
+app.use(express.static(path.join(__dirname, '../frontend')));
 app.use('/components', express.static(path.join(__dirname, '../components')));
 
 // =====================================================
@@ -132,6 +133,12 @@ app.get('/perfil', requerirSesion, ControladorPerfil.mostrarPerfil);
 app.post('/api/perfil/datos', requerirSesion, ControladorPerfil.actualizarDatosPerfil);
 app.post('/api/perfil/password', requerirSesion, ControladorPerfil.cambiarContrasena);
 app.post('/api/perfil/foto', requerirSesion, ControladorPerfil.guardarFotoPerfil);
+
+// =====================================================
+// RUTAS DE CATÁLOGO (DETALLE DE PRODUCTO)
+// =====================================================
+app.get('/catalogo', requerirCliente, CatalogoController.mostrarCatalogo);
+app.get('/producto/:id', requerirCliente, CatalogoController.mostrarDetalle); // <-- RUTA NUEVA
 
 // =====================================================
 // RUTA PRINCIPAL

@@ -1,5 +1,23 @@
 const CatalogoModel = require('../models/catalogoModel');
 
+const IMAGENES_PRODUCTOS = {
+  680: '/imagenes/road_frame_black_58.jpg',
+  706: '/imagenes/road_frame_red_58.jpg',
+  707: '/imagenes/Helmet_Red.png',
+  708: '/imagenes/Helmet_Black.jpg',
+  709: '/imagenes/Mountain_Bike_Socks_Size_M.jpg',
+  710: '/imagenes/Mountain_Bike_Socks_Size_L.jpg',
+  711: '/imagenes/Helmet_Blue.jpg',
+  712: '/imagenes/AWC_Logo_Cap.jpg',
+  713: '/imagenes/Long_Sleeve_Logo_Jersey_S.jpg',
+  714: '/imagenes/Long_Sleeve_Logo_Jersey_M.jpg',
+  715: '/imagenes/Long_Sleeve_Logo_Jersey_L.jpg',
+  716: '/imagenes/Long_Sleeve_Logo_Jersey_XL.jpg',
+  717: '/imagenes/HL_Road_Frame_Red_62.png',
+  718: '/imagenes/HL_Road_Frame_Red_48.jpg',
+  719: '/imagenes/HL_Road_Frame_Red_44.jpg'
+};
+
 class CatalogoController {
 
 
@@ -606,7 +624,7 @@ class CatalogoController {
           paginaActual,
 
           totalPaginas,
-          
+
           pagina: 'catalogo'
 
         }
@@ -629,6 +647,51 @@ class CatalogoController {
     }
 
   }
+
+  // =====================================================
+  // MOSTRAR DETALLES DEL PRODUCTO
+  // =====================================================
+  static async mostrarDetalle(req, res) {
+    try {
+      const productId = parseInt(req.params.id);
+
+      if (isNaN(productId) || productId <= 0) {
+        return res.status(400).send('ID de producto no válido.');
+      }
+
+      const productoRaw = await CatalogoModel.obtenerDetalleProducto(productId);
+
+      if (!productoRaw) {
+        return res.status(404).send('Producto no encontrado.');
+      }
+
+      // Mapeo de imagen
+      const imagenUrl = IMAGENES_PRODUCTOS[productId] || 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&q=80';
+
+      const producto = {
+        ProductID: productoRaw.ProductID,
+        Name: productoRaw.Name || 'Producto sin nombre',
+        ProductNumber: productoRaw.ProductNumber || 'N/A',
+        Color: productoRaw.Color || null,
+        ListPrice: productoRaw.ListPrice || 0,
+        Size: productoRaw.Size || null,
+        Weight: productoRaw.Weight || null,
+        Stock: productoRaw.Stock ?? 0, // Se obtiene directo de la base de datos
+        CategoryName: productoRaw.CategoryName || 'General',
+        Description: productoRaw.Description || 'Sin descripción disponible.',
+        imagenUrl: imagenUrl
+      };
+
+      res.render('productoDetalle', {
+        producto,
+        pagina: 'catalogo'
+      });
+    } catch (error) {
+      console.error('ERROR AL MOSTRAR DETALLES DEL PRODUCTO:', error);
+      res.status(500).send('Error al cargar los detalles del producto.');
+    }
+  }
+
 
 }
 
