@@ -11,6 +11,7 @@ class ReportesModel {
             .query(`
                 SELECT
                     h.SalesOrderID,
+                    h.CustomerID,
                     c.FirstName,
                     c.LastName,
                     CONVERT(VARCHAR(10), h.OrderDate, 103) AS OrderDate,
@@ -26,11 +27,21 @@ class ReportesModel {
                 SELECT Status, COUNT_BIG(*) AS Total
                 FROM SalesLT.SalesOrderHeader
                 GROUP BY Status;
+
+                SELECT DISTINCT c.CustomerID, c.FotoPerfil
+                FROM SalesLT.SalesOrderHeader h
+                INNER JOIN SalesLT.Customer c
+                    ON h.CustomerID = c.CustomerID
+                WHERE (@status IS NULL OR h.Status = @status)
+                    AND (@cliente IS NULL OR CONCAT(c.FirstName, ' ', c.LastName) LIKE N'%' + @cliente + N'%')
+                    AND (@salesOrderID IS NULL OR h.SalesOrderID = @salesOrderID)
+                    AND c.FotoPerfil IS NOT NULL;
             `);
 
         return {
             pedidos: result.recordsets[0],
-            conteos: result.recordsets[1]
+            conteos: result.recordsets[1],
+            fotosClientes: result.recordsets[2]
         };
     }
 }

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes de pedidos - AdventureWorks</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/reportes.css">
+    <link rel="stylesheet" href="/css/footer.css">
+</head>
+<body>
+    <%- include('../../components/navbar.ejs') %>
+
+    <% const nombresEstado = { 1: 'Pendiente', 2: 'En proceso', 3: 'Despachado', 4: 'Cancelado' }; %>
+    <% const tarjetasEstado = [
+        { estado: 'todos', etiqueta: 'Total', total: conteos.todos, icono: 'total' },
+        { estado: '1', etiqueta: 'Pendiente', total: conteos[1], icono: 'pendiente' },
+        { estado: '2', etiqueta: 'En proceso', total: conteos[2], icono: 'proceso' },
+        { estado: '3', etiqueta: 'Despachado', total: conteos[3], icono: 'despachado' },
+        { estado: '4', etiqueta: 'Cancelado', total: conteos[4], icono: 'cancelado' }
+    ]; %>
+
+    <main class="reportes-main">
+        <header class="reportes-header">
+            <div class="reportes-titulo">
+                <p class="reportes-kicker">OPERACIÓN DE BODEGA</p>
+                <h1>Reportes de pedidos</h1>
+                <p>Seguimiento actualizado de los pedidos y sus clientes.</p>
+            </div>
+            <div class="reportes-actualizacion">
+                <div class="actualizacion-indicador">
+                    <span class="indicador-pulso" aria-hidden="true"></span>
+                    <div>
+                        <strong>Estado actual del inventario</strong>
+                        <span>Actualizado <time id="ultima-actualizacion">al cargar</time></span>
+                    </div>
+                </div>
+                <button class="boton-actualizar" id="actualizar-reportes" type="button" aria-label="Actualizar pedidos">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M5.6 9A7 7 0 0 1 18 6l2 2M4 16l2 2a7 7 0 0 0 12.4-3" /></svg>
+                    <span>Actualizar</span>
+                </button>
+            </div>
+        </header>
+
+        <section class="resumen-estados" aria-label="Resumen y filtro rápido por estado">
+            <% tarjetasEstado.forEach(tarjeta => { %>
+                <a class="resumen-tarjeta resumen-<%= tarjeta.icono %> <%= estadoSeleccionado === tarjeta.estado ? 'activa' : '' %>"
+                   href="/reportes?estado=<%= tarjeta.estado %><%= busqueda ? '&buscar=' + encodeURIComponent(busqueda) : '' %>"
+                   aria-current="<%= estadoSeleccionado === tarjeta.estado ? 'page' : 'false' %>"
+                   data-loading-link>
+                    <span class="resumen-icono" aria-hidden="true">
+                        <% if (tarjeta.icono === 'total') { %>
+                            <svg viewBox="0 0 24 24"><path d="M8 5h10a2 2 0 0 1 2 2v12H8a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="M6 9H4v10a2 2 0 0 0 2 2h12M10 10h6M10 14h6"/></svg>
+                        <% } else if (tarjeta.icono === 'pendiente') { %>
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>
+                        <% } else if (tarjeta.icono === 'proceso') { %>
+                            <svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 2M4 16l2 2a7 7 0 0 0 12.4-3"/></svg>
+                        <% } else if (tarjeta.icono === 'despachado') { %>
+                            <svg viewBox="0 0 24 24"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg>
+                        <% } else { %>
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m9 9 6 6m0-6-6 6"/></svg>
+                        <% } %>
+                    </span>
+                    <span class="resumen-datos">
+                        <span class="resumen-etiqueta"><%= tarjeta.etiqueta %></span>
+                        <strong><%= tarjeta.total %></strong>
+                    </span>
+                    <span class="resumen-flecha" aria-hidden="true">›</span>
+                </a>
+            <% }); %>
+        </section>
+
+        <section class="reportes-panel" aria-label="Filtros y listado de pedidos">
+            <div class="reportes-filtros">
+                <nav class="filtros-estados" aria-label="Filtrar por estado">
+                    <% tarjetasEstado.forEach(tarjeta => { %>
+                        <a class="filtro-chip <%= estadoSeleccionado === tarjeta.estado ? 'activa' : '' %>"
+                           href="/reportes?estado=<%= tarjeta.estado %><%= busqueda ? '&buscar=' + encodeURIComponent(busqueda) : '' %>"
+                           aria-current="<%= estadoSeleccionado === tarjeta.estado ? 'page' : 'false' %>"
+                           data-loading-link>
+                            <span><%= tarjeta.etiqueta === 'Total' ? 'Todos' : tarjeta.etiqueta %></span>
+                            <span class="chip-conteo"><%= tarjeta.total %></span>
+                        </a>
+                    <% }); %>
+                </nav>
+
+                <form class="busqueda-form" id="busqueda-form" action="/reportes" method="GET" role="search">
+                    <input type="hidden" name="estado" value="<%= estadoSeleccionado %>">
+                    <label class="busqueda-campo" for="buscar-pedido">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5" /></svg>
+                        <input id="buscar-pedido" name="buscar" type="search" maxlength="100"
+                               placeholder="Buscar por cliente o # de pedido" value="<%= busqueda %>"
+                               autocomplete="off" aria-label="Buscar por cliente o número de pedido">
+                    </label>
+                    <% if (estadoSeleccionado !== 'todos' || busqueda) { %>
+                        <a class="filtros-limpiar" href="/reportes" data-loading-link>Limpiar filtros</a>
+                    <% } %>
+                </form>
+
+                <% if (errorFiltro) { %>
+                    <p class="filtros-error" role="alert"><%= errorFiltro %></p>
+                <% } %>
+            </div>
+
+            <% if (errorCarga) { %>
+                <div class="estado-error" role="alert">
+                    <span class="error-icono" aria-hidden="true">!</span>
+                    <div>
+                        <strong>No pudimos cargar los pedidos</strong>
+                        <p>Comprueba la conexión e inténtalo de nuevo.</p>
+                    </div>
+                    <a href="/reportes" class="boton-reintentar" data-loading-link>Reintentar</a>
+                </div>
+            <% } else { %>
+            <div class="reportes-resultados">
+                <div>
+                    <h2>Pedidos</h2>
+                    <p><span id="resultados-visibles"><%= reportes.length %></span> de <%= conteos[estadoSeleccionado === 'todos' ? 'todos' : estadoSeleccionado] %> resultados</p>
+                </div>
+                <span class="resultados-actualizacion">Ordenados por fecha más reciente</span>
+            </div>
+
+            <% if (reportes.length === 0) { %>
+                <div class="estado-vacio" role="status">
+                    <span class="vacio-icono" aria-hidden="true">
+                        <svg viewBox="0 0 48 48"><path d="M8 14h32v25H8zM5 14l4-7h30l4 7M17 23h14M17 29h9"/><path d="M8 14c0 4 7 4 8 0 0 4 7 4 8 0 0 4 7 4 8 0 0 4 7 4 8 0"/></svg>
+                    </span>
+                    <h2><%= estadoSeleccionado !== 'todos' ? `No hay pedidos ${nombresEstado[estadoSeleccionado].toLowerCase()}` : 'No encontramos pedidos' %></h2>
+                    <p><%= busqueda ? 'Prueba con otro cliente o número de pedido.' : 'Cuando se registren pedidos, aparecerán aquí.' %></p>
+                    <% if (estadoSeleccionado !== 'todos' || busqueda) { %>
+                        <a class="filtros-limpiar" href="/reportes" data-loading-link>Quitar filtros</a>
+                    <% } %>
+                </div>
+            <% } else { %>
+            <div class="reportes-tabla-wrap" id="lista-pedidos">
+                <table class="reportes-tabla">
+                    <thead>
+                        <tr>
+                            <th scope="col" data-sort-header="pedido" aria-sort="none">
+                                <button class="ordenar-columna" type="button" data-sort="pedido">Pedido <span aria-hidden="true"></span></button>
+                            </th>
+                            <th scope="col">Cliente</th>
+                            <th scope="col" data-sort-header="fecha" aria-sort="descending">
+                                <button class="ordenar-columna" type="button" data-sort="fecha">Fecha <span aria-hidden="true">↓</span></button>
+                            </th>
+                            <th scope="col">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pedidos-body">
+                        <% reportes.forEach(pedido => { %>
+                            <tr data-order-id="<%= pedido.SalesOrderID %>" data-order-date="<%= pedido.OrderDate %>">
+                                <td class="reportes-numero" data-label="Pedido"><span>#<%= pedido.SalesOrderID %></span></td>
+                                <td data-label="Cliente">
+                                    <span class="cliente-identidad">
+                                        <span class="cliente-avatar" data-avatar aria-hidden="true">
+                                            <% if (pedido.CustomerPhoto) { %>
+                                                <img src="<%= pedido.CustomerPhoto %>" alt="" loading="lazy">
+                                            <% } %>
+                                        </span>
+                                        <span class="cliente-nombre" data-client-name><%= pedido.CustomerName || 'Cliente sin nombre' %></span>
+                                    </span>
+                                </td>
+                                <td data-label="Fecha">
+                                    <span class="fecha-pedido"><%= pedido.OrderDate %></span>
+                                    <span class="fecha-relativa" data-relative-date></span>
+                                </td>
+                                <td data-label="Estado">
+                                    <span class="estado-etiqueta estado-<%= pedido.Status %>">
+                                        <span class="estado-punto" aria-hidden="true"></span>
+                                        <%= pedido.StatusName %>
+                                    </span>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <div class="cargar-mas-wrap" id="cargar-mas-wrap" hidden>
+                <button id="cargar-mas" class="boton-cargar-mas" type="button">Cargar más pedidos</button>
+            </div>
+            <% } %>
+            <% } %>
+        </section>
+    </main>
+
+    <div class="reportes-loader" id="reportes-loader" hidden role="status" aria-live="polite">
+        <span class="loader-spinner" aria-hidden="true"></span>
+        <span>Actualizando pedidos...</span>
+    </div>
+
+    <%- include('../../components/footer.ejs') %>
+    <script>
+        (() => {
+            const form = document.querySelector('#busqueda-form');
+            const searchInput = document.querySelector('#buscar-pedido');
+            const loader = document.querySelector('#reportes-loader');
+            const orderBody = document.querySelector('#pedidos-body');
+            const loadMoreButton = document.querySelector('#cargar-mas');
+            const pageSize = 25;
+            let visibleRows = pageSize;
+            let searchTimer;
+
+            const showLoader = () => {
+                if (loader) loader.hidden = false;
+            };
+
+            form?.addEventListener('submit', showLoader);
+
+            searchInput?.addEventListener('input', () => {
+                window.clearTimeout(searchTimer);
+                searchTimer = window.setTimeout(() => form.requestSubmit(), 300);
+            });
+
+            document.querySelectorAll('[data-loading-link]').forEach(link => {
+                link.addEventListener('click', showLoader);
+            });
+
+            document.querySelector('#actualizar-reportes')?.addEventListener('click', () => {
+                showLoader();
+                window.location.reload();
+            });
+
+            const updateTime = document.querySelector('#ultima-actualizacion');
+            if (updateTime) {
+                updateTime.textContent = new Intl.DateTimeFormat('es-CO', {
+                    dateStyle: 'short',
+                    timeStyle: 'short'
+                }).format(new Date());
+            }
+
+            const parseDate = value => {
+                const [day, month, year] = value.split('/').map(Number);
+                return new Date(year, month - 1, day);
+            };
+
+            const relativeDate = date => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const day = new Date(date);
+                day.setHours(0, 0, 0, 0);
+                const days = Math.round((today - day) / 86400000);
+                if (days <= 0) return 'Hoy';
+                if (days === 1) return 'Ayer';
+                return `Hace ${days} días`;
+            };
+
+            document.querySelectorAll('[data-client-name]').forEach(nameElement => {
+                const rawName = nameElement.textContent.trim();
+                const displayName = rawName.toLocaleLowerCase('es-CO').replace(/(^|[\s'-])([a-záéíóúüñ])/g, (match, prefix, letter) => prefix + letter.toLocaleUpperCase('es-CO'));
+                nameElement.textContent = displayName;
+                const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map(name => name[0]).join('');
+                const avatar = nameElement.closest('.cliente-identidad')?.querySelector('[data-avatar]');
+                if (avatar && !avatar.querySelector('img')) avatar.textContent = initials || '?';
+            });
+
+            document.querySelectorAll('[data-relative-date]').forEach(element => {
+                const dateText = element.previousElementSibling?.textContent.trim();
+                if (dateText) element.textContent = relativeDate(parseDate(dateText));
+            });
+
+            if (orderBody) {
+                const headers = document.querySelectorAll('[data-sort]');
+                let sortKey = 'fecha';
+                let sortDirection = -1;
+
+                const sortedRows = () => Array.from(orderBody.querySelectorAll('tr[data-order-id]')).sort((first, second) => {
+                    if (sortKey === 'pedido') {
+                        return (Number(first.dataset.orderId) - Number(second.dataset.orderId)) * sortDirection;
+                    }
+                    return (parseDate(first.dataset.orderDate) - parseDate(second.dataset.orderDate)) * sortDirection;
+                });
+
+                const renderRows = () => {
+                    const rows = sortedRows();
+                    rows.forEach((row, index) => {
+                        row.hidden = index >= visibleRows;
+                        orderBody.appendChild(row);
+                    });
+                    const count = Math.min(visibleRows, rows.length);
+                    const visibleCount = document.querySelector('#resultados-visibles');
+                    if (visibleCount) visibleCount.textContent = count;
+                    const loadMoreWrap = document.querySelector('#cargar-mas-wrap');
+                    if (loadMoreWrap) loadMoreWrap.hidden = rows.length <= visibleRows;
+                };
+
+                headers.forEach(button => button.addEventListener('click', () => {
+                    const nextKey = button.dataset.sort;
+                    if (nextKey === sortKey) sortDirection *= -1;
+                    else {
+                        sortKey = nextKey;
+                        sortDirection = nextKey === 'fecha' ? -1 : 1;
+                    }
+
+                    headers.forEach(header => {
+                        const headerCell = header.closest('th');
+                        const active = header === button;
+                        headerCell.setAttribute('aria-sort', active ? (sortDirection === 1 ? 'ascending' : 'descending') : 'none');
+                        header.querySelector('span').textContent = active ? (sortDirection === 1 ? '↑' : '↓') : '';
+                    });
+                    renderRows();
+                }));
+
+                loadMoreButton?.addEventListener('click', () => {
+                    visibleRows += pageSize;
+                    renderRows();
+                });
+
+                renderRows();
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -9,6 +9,7 @@ const AuthController = require('./controllers/authController');
 const CarritoController = require('./controllers/carritoController');
 const InventarioController = require('./controllers/inventarioController');
 const ControladorPerfil = require('./controllers/perfilController');
+const ReportesController = require('./controllers/reportesController');
 
 const app = express();
 
@@ -102,6 +103,7 @@ app.post('/carrito/finalizar', requerirCliente, CarritoController.finalizarCompr
 // =====================================================
 app.get('/inventario', requerirTrabajador, InventarioController.mostrarInventario);
 app.post('/inventario/estado', requerirTrabajador, InventarioController.cambiarEstado);
+app.get('/reportes', requerirTrabajador, ReportesController.mostrarReportes);
 
 // =====================================================
 // AUTENTICACIÓN Y LOGOUT

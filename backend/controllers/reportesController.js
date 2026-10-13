@@ -9,6 +9,23 @@ const estados = {
 
 const conteosVacios = () => ({ todos: 0, 1: 0, 2: 0, 3: 0, 4: 0 });
 
+const convertirFoto = foto => {
+    if (!foto) return '';
+
+    const imagen = Buffer.from(foto);
+    let mimeType = '';
+
+    if (imagen.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) {
+        mimeType = 'image/png';
+    } else if (imagen.subarray(0, 3).equals(Buffer.from([255, 216, 255]))) {
+        mimeType = 'image/jpeg';
+    } else if (imagen.subarray(0, 3).toString('ascii') === 'GIF') {
+        mimeType = 'image/gif';
+    }
+
+    return mimeType ? `data:${mimeType};base64,${imagen.toString('base64')}` : '';
+};
+
 const mostrarReportes = async (req, res) => {
     const query = req.query;
     const valorEstado = typeof query.estado === 'string' ? query.estado : 'todos';
@@ -48,11 +65,17 @@ const mostrarReportes = async (req, res) => {
         });
         conteos.todos = resultado.conteos.reduce((total, conteo) => total + Number(conteo.Total), 0);
 
+        const fotosClientes = new Map(resultado.fotosClientes.map(cliente => [
+            String(cliente.CustomerID),
+            convertirFoto(cliente.FotoPerfil)
+        ]));
+
         const reportes = resultado.pedidos.map(pedido => ({
             ...pedido,
             CustomerName: [pedido.FirstName, pedido.LastName]
                 .filter(Boolean)
                 .join(' '),
+            CustomerPhoto: fotosClientes.get(String(pedido.CustomerID)) || '',
             StatusName: estados[pedido.Status] || String(pedido.Status)
         }));
 
