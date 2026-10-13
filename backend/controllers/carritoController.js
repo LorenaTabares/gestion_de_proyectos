@@ -1,3 +1,4 @@
+
 const CatalogoModel = require('../models/catalogoModel');
 const CarritoModel = require('../models/carritoModel');
 
@@ -6,75 +7,159 @@ class CarritoController {
     // =====================================================
     // AGREGAR PRODUCTO AL CARRITO
     // =====================================================
-    static agregar(req, res) {
-        const productId = parseInt(req.body.productId);
 
-        if (!productId) {
-            if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-                return res.status(400).json({ success: false, message: 'Producto no válido.' });
+    static async agregar(req, res) {
+        const aceptaJSON =
+            (req.headers.accept || '').includes('application/json') ||
+            req.xhr === true;
+
+        const responderError = (status, message, extra = {}) => {
+            if (aceptaJSON) {
+                return res.status(status).json({
+                    success: false,
+                    message,
+                    ...extra
+                });
             }
-            return res.status(400).send('Producto no válido.');
-        }
 
-        if (!req.session.carrito) {
-            req.session.carrito = [];
-        }
+            return res.status(status).send(message);
+        };
 
-        const productoExistente = req.session.carrito.find(
-            producto => producto.productId === productId
-        );
+        try {
+            const productId = Number(req.body.productId);
+            const cantidad = Number(req.body.cantidad ?? 1);
 
-        if (productoExistente) {
-            productoExistente.cantidad++;
-        } else {
-            req.session.carrito.push({
-                productId: productId,
-                cantidad: 1
+            if (
+                !Number.isInteger(productId) ||
+                productId <= 0 ||
+                !Number.isInteger(cantidad) ||
+                cantidad <= 0
+            ) {
+                return responderError(
+                    400,
+                    'El producto o la cantidad no son válidos.'
+                );
+            }
+
+            const producto =
+                await CatalogoModel.obtenerProductoPorId(productId);
+
+            if (!producto) {
+                return responderError(404, 'El producto no existe.');
+            }
+
+            const stockDisponible = Number(producto.Stock);
+
+            console.log('[CARRITO] Validación de inventario:', {
+                productId,
+                stockRecibidoDelModelo: producto.Stock,
+                stockDisponible,
+                cantidadSolicitada: cantidad
             });
-        }
 
-        console.log('CARRITO ACTUALIZADO:', req.session.carrito);
+            if (
+                !Number.isInteger(stockDisponible) ||
+                stockDisponible < 0
+            ) {
+                return responderError(
+                    500,
+                    'El servidor no pudo leer correctamente el stock.'
+                );
+            }
 
-        if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-            return res.json({ 
-                success: true, 
-                message: 'Producto agregado al carrito.',
-                totalItems: req.session.carrito.reduce((acc, p) => acc + p.cantidad, 0)
+            if (stockDisponible === 0) {
+                return responderError(
+                    400,
+                    'El producto está agotado.',
+                    { stockDisponible }
+                );
+            }
+
+            if (!req.session.carrito) {
+                req.session.carrito = [];
+            }
+
+            const carrito = req.session.carrito;
+
+            const existente = carrito.find(
+                item => Number(item.productId) === productId
+            );
+
+            const cantidadActual = existente
+                ? Number(existente.cantidad)
+                : 0;
+
+            const nuevaCantidad = cantidadActual + cantidad;
+
+            if (nuevaCantidad > stockDisponible) {
+                return responderError(
+                    400,
+                    `Solo hay ${stockDisponible} unidades disponibles. ` +
+                    `Ya tienes ${cantidadActual} en el carrito.`,
+                    {
+                        stockDisponible,
+                        cantidadEnCarrito: cantidadActual
+                    }
+                );
+            }
+
+            if (existente) {
+                existente.cantidad = nuevaCantidad;
+            } else {
+                carrito.push({
+                    productId,
+                    cantidad
+                });
+            }
+
+            return req.session.save(error => {
+                if (error) {
+                    console.error(
+                        '[CARRITO] Error al guardar la sesión:',
+                        error
+                    );
+
+                    return responderError(
+                        500,
+                        'No se pudo guardar el producto en el carrito.'
+                    );
+                }
+
+                const totalItems = carrito.reduce(
+                    (total, item) => total + Number(item.cantidad),
+                    0
+                );
+
+                console.log('[CARRITO] Producto agregado:', {
+                    productId,
+                    cantidadEnCarrito: nuevaCantidad,
+                    totalItems
+                });
+
+                if (aceptaJSON) {
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Producto agregado correctamente al carrito.',
+                        stockDisponible,
+                        cantidadEnCarrito: nuevaCantidad,
+                        totalItems
+                    });
+                }
+
+                // El formulario normal del catálogo vuelve al catálogo.
+                return res.redirect('/catalogo');
             });
-        }
 
-        res.redirect('/catalogo');
+        } catch (error) {
+            console.error('[CARRITO] Error al agregar:', error);
+
+            return responderError(
+                500,
+                'Ocurrió un error al agregar el producto al carrito.'
+            );
+        }
     }
 
-    // =====================================================
-    // ELIMINAR PRODUCTO DEL CARRITO
-    // =====================================================
-    static eliminar(req, res) {
-        const productId = parseInt(req.body.productId);
-
-        if (!productId) {
-            if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-                return res.status(400).json({ success: false, message: 'Producto no válido.' });
-            }
-            return res.status(400).send('Producto no válido.');
-        }
-
-        if (!req.session.carrito) {
-            return res.redirect('/carrito');
-        }
-
-        req.session.carrito = req.session.carrito.filter(
-            producto => producto.productId !== productId
-        );
-
-        console.log('PRODUCTO ELIMINADO DEL CARRITO:', productId);
-
-        if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-            return res.json({ success: true, message: 'Producto eliminado del carrito.' });
-        }
-
-        res.redirect('/carrito');
-    }
 
     // =====================================================
     // MOSTRAR CARRITO
@@ -85,13 +170,18 @@ class CarritoController {
             const productos = [];
 
             for (const item of carrito) {
-                const producto = await CatalogoModel.obtenerProductoPorId(item.productId);
+                const producto =
+                    await CatalogoModel.obtenerProductoPorId(
+                        item.productId
+                    );
 
                 if (producto) {
                     productos.push({
                         ...producto,
-                        cantidad: item.cantidad,
-                        subtotal: Number(producto.ListPrice || 0) * item.cantidad
+                        cantidad: Number(item.cantidad),
+                        subtotal:
+                            Number(producto.ListPrice || 0) *
+                            Number(item.cantidad)
                     });
                 }
             }
@@ -101,92 +191,150 @@ class CarritoController {
                 0
             );
 
-            // Se agrega 'pagina: carrito' para la integración con navbar.ejs
-            res.render('carrito', {
+            return res.render('carrito', {
                 productos,
                 total,
                 pagina: 'carrito'
             });
 
         } catch (error) {
-            console.error('ERROR AL MOSTRAR CARRITO:', error);
-            res.status(500).send('Error al cargar el carrito.');
+            console.error('ERROR AL MOSTRAR EL CARRITO:', error);
+
+            return res.status(500).send(
+                'Error al cargar el carrito.'
+            );
         }
+    }
+
+    // =====================================================
+    // ELIMINAR PRODUCTO DEL CARRITO
+    // =====================================================
+    static eliminar(req, res) {
+        const productId = Number(req.body.productId);
+
+        if (!Number.isInteger(productId) || productId <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'El producto no es válido.'
+            });
+        }
+
+        if (!req.session.carrito) {
+            return res.redirect('/carrito');
+        }
+
+        const carritoAnterior = req.session.carrito;
+
+        req.session.carrito = carritoAnterior.filter(
+            item => Number(item.productId) !== productId
+        );
+
+        return req.session.save(error => {
+            if (error) {
+                console.error(
+                    'ERROR AL GUARDAR EL CARRITO:',
+                    error
+                );
+
+                req.session.carrito = carritoAnterior;
+
+                return res.status(500).json({
+                    success: false,
+                    message: 'No se pudo eliminar el producto.'
+                });
+            }
+
+            return res.redirect('/carrito');
+        });
     }
 
     // =====================================================
     // FINALIZAR COMPRA
     // =====================================================
     static async finalizarCompra(req, res) {
+        const aceptaJSON =
+            req.xhr ||
+            (req.headers.accept || '').includes('application/json');
+
         try {
             const carrito = req.session.carrito || [];
 
-            // 1. Verificar que haya productos en el carrito
             if (carrito.length === 0) {
-                if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-                    return res.status(400).json({ success: false, message: 'El carrito está vacío.' });
-                }
-                return res.status(400).send('El carrito está vacío.');
-            }
-
-            // 2. OBTENER CustomerID SEGURAMENTE DESDE LA SESIÓN
-            const usuario = req.session.usuario;
-            const customerId = usuario ? parseInt(usuario.CustomerID) : null;
-
-            if (!customerId) {
-                if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-                    return res.status(401).json({ 
-                        success: false, 
-                        message: 'Debes iniciar sesión para finalizar la compra.',
-                        redirectUrl: '/login' 
-                    });
-                }
-                return res.redirect('/login');
-            }
-
-            console.log('=================================');
-            console.log('FINALIZANDO COMPRA');
-            console.log('CUSTOMER ID:', customerId);
-            console.log('PRODUCTOS:', carrito);
-            console.log('=================================');
-
-            // 3. Crear pedido y guardar en la BD
-            const salesOrderId = await CarritoModel.finalizarCompra(
-                customerId,
-                carrito
-            );
-
-            // 4. Vaciar carrito de la sesión
-            req.session.carrito = [];
-
-            console.log('COMPRA FINALIZADA CON ÉXITO. PEDIDO #', salesOrderId);
-
-            // Respuesta si es petición AJAX / Fetch
-            if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-                return res.status(200).json({
-                    success: true,
-                    message: `Compra realizada correctamente. Pedido #${salesOrderId}`,
-                    salesOrderId,
-                    redirectUrl: '/catalogo'
+                return res.status(400).json({
+                    success: false,
+                    message: 'El carrito está vacío.'
                 });
             }
 
-            // Respuesta para navegación tradicional
-            return res.send(`
-                <script>
-                    alert('Compra realizada correctamente. Pedido #${salesOrderId}');
-                    window.location.href = '/catalogo';
-                </script>
-            `);
+            const usuario = req.session.usuario;
+            const customerId = usuario
+                ? Number(usuario.CustomerID)
+                : null;
+
+            if (
+                !Number.isInteger(customerId) ||
+                customerId <= 0
+            ) {
+                if (aceptaJSON) {
+                    return res.status(401).json({
+                        success: false,
+                        message: 'Debes iniciar sesión para comprar.',
+                        redirectUrl: '/login'
+                    });
+                }
+
+                return res.redirect('/login');
+            }
+
+            const salesOrderId =
+                await CarritoModel.finalizarCompra(
+                    customerId,
+                    carrito
+                );
+
+            req.session.carrito = [];
+
+            return req.session.save(error => {
+                if (error) {
+                    console.error(
+                        'ERROR AL GUARDAR LA SESIÓN DE COMPRA:',
+                        error
+                    );
+
+                    return res.status(500).json({
+                        success: false,
+                        compraRegistrada: true,
+                        salesOrderId,
+                        message:
+                            `El pedido #${salesOrderId} se registró, ` +
+                            'pero no se pudo actualizar la sesión.'
+                    });
+                }
+
+                if (aceptaJSON) {
+                    return res.json({
+                        success: true,
+                        message:
+                            `Compra realizada correctamente. ` +
+                            `Pedido #${salesOrderId}`,
+                        salesOrderId,
+                        redirectUrl: '/catalogo'
+                    });
+                }
+
+                return res.redirect('/catalogo');
+            });
 
         } catch (error) {
             console.error('ERROR AL FINALIZAR COMPRA:', error);
-            
-            if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-                return res.status(500).json({ success: false, message: 'No se pudo finalizar la compra.' });
-            }
-            
-            res.status(500).send('No se pudo finalizar la compra.');
+
+            const mensaje =
+                error.message || 'No se pudo finalizar la compra.';
+
+            return res.status(400).json({
+                success: false,
+                message: mensaje
+            });
         }
     }
 }

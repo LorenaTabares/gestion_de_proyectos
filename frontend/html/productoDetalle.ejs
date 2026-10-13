@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title><%= producto.Name %> - Detalle del producto</title>
+
+    <link rel="stylesheet" href="/css/estilos.css">
+    <link rel="stylesheet" href="/css/productoDetalle.css">
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/footer.css">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <script src="/js/productoDetalle.js?v=2" defer></script>
+</head>
+
+<body>
+    <%- include('../../components/navbar.ejs') %>
+
+    <main class="main-container">
+        <div class="breadcrumb">
+            <a href="/catalogo">&larr; Volver al Catálogo</a>
+        </div>
+
+        <div
+            class="detalle-card"
+            id="detalle-producto"
+            data-product-id="<%= producto.ProductID %>"
+            data-stock="<%= producto.Stock %>"
+        >
+            <div class="detalle-imagen-container">
+                <% if (producto.imagenUrl) { %>
+                    <img
+                        src="<%= producto.imagenUrl %>"
+                        alt="<%= producto.Name %>"
+                        class="detalle-img"
+                    >
+                <% } else { %>
+                    <div class="producto-sin-imagen">
+                        Sin imagen
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="detalle-info">
+                <span class="categoria-badge">
+                    <%= producto.CategoryName || 'General' %>
+                </span>
+
+                <h1 class="detalle-titulo">
+                    <%= producto.Name %>
+                </h1>
+
+                <p class="detalle-codigo">
+                    Código:
+                    <strong><%= producto.ProductNumber %></strong>
+                </p>
+
+                <!-- DISPONIBILIDAD -->
+                <div class="disponibilidad-container">
+                    <% if (Number(producto.Stock) <= 0) { %>
+                        <span
+                            id="stock-badge"
+                            class="stock-badge agotado"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            ✖ Agotado (0 unidades en stock)
+                        </span>
+                    <% } else if (Number(producto.Stock) <= 3) { %>
+                        <span
+                            id="stock-badge"
+                            class="stock-badge stock-bajo"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            ⚠️ ¡Quedan pocas unidades!
+                            (<%= producto.Stock %> en stock)
+                        </span>
+                    <% } else { %>
+                        <span
+                            id="stock-badge"
+                            class="stock-badge disponible"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            ✔ Disponible
+                            (<%= producto.Stock %> unidades en stock)
+                        </span>
+                    <% } %>
+                </div>
+
+                <!-- PRECIO -->
+                <div class="detalle-precio">
+                    $<%= Number(producto.ListPrice || 0).toLocaleString(
+                        'en-US',
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    ) %> USD
+                </div>
+
+                <!-- DESCRIPCIÓN -->
+                <div class="detalle-seccion">
+                    <h3>Descripción</h3>
+                    <p>
+                        <%= producto.Description ||
+                            'No hay descripción adicional disponible.' %>
+                    </p>
+                </div>
+
+                <!-- ESPECIFICACIONES -->
+                <div class="detalle-especificaciones">
+                    <% if (producto.Color) { %>
+                        <p>
+                            <strong>Color:</strong>
+                            <%= producto.Color %>
+                        </p>
+                    <% } %>
+
+                    <% if (producto.Size) { %>
+                        <p>
+                            <strong>Talla:</strong>
+                            <%= producto.Size %>
+                        </p>
+                    <% } %>
+
+                    <% if (producto.Weight != null) { %>
+                        <p>
+                            <strong>Peso:</strong>
+                            <%= producto.Weight %> kg
+                        </p>
+                    <% } %>
+                </div>
+
+                <!-- FORMULARIO DE COMPRA -->
+                <form
+                    id="form-agregar-carrito"
+                    class="form-compra"
+                    action="/carrito/agregar"
+                    method="POST"
+                >
+                    <input
+                        type="hidden"
+                        name="productId"
+                        id="productId"
+                        value="<%= producto.ProductID %>"
+                    >
+
+                    <div class="contador-container">
+                        <label for="cantidad-input">
+                            <strong>Cantidad:</strong>
+                        </label>
+
+                        <div class="contador-box">
+                            <button
+                                type="button"
+                                id="btn-menos"
+                                class="btn-contador"
+                                aria-label="Disminuir cantidad"
+                                <%= Number(producto.Stock) <= 1 ? 'disabled' : '' %>
+                            >&minus;</button>
+
+                            <input
+                                type="number"
+                                id="cantidad-input"
+                                name="cantidad"
+                                value="<%= Number(producto.Stock) > 0 ? 1 : 0 %>"
+                                min="1"
+                                max="<%= producto.Stock %>"
+                                readonly
+                                aria-label="Cantidad seleccionada"
+                            >
+
+                            <button
+                                type="button"
+                                id="btn-mas"
+                                class="btn-contador"
+                                aria-label="Aumentar cantidad"
+                                <%= Number(producto.Stock) <= 1 ? 'disabled' : '' %>
+                            >&plus;</button>
+                        </div>
+                    </div>
+
+                    <p
+                        id="mensaje-cantidad"
+                        class="mensaje-cantidad"
+                        aria-live="polite"
+                    ></p>
+
+                    <button
+                        type="submit"
+                        id="btn-agregar"
+                        class="btn-carrito-agregar"
+                        <%= Number(producto.Stock) <= 0 ? 'disabled' : '' %>
+                    >
+                        <%= Number(producto.Stock) <= 0
+                            ? 'Producto Agotado'
+                            : 'Agregar al Carrito' %>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../../components/footer.ejs') %>
+</body>
+</html>

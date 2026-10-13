@@ -3,7 +3,7 @@ const CatalogoModel = require('./catalogoModel');
 
 class CarritoModel {
 
-    
+
     // =====================================================
     // OBTENER PRODUCTO POR ID
     // =====================================================
@@ -266,28 +266,32 @@ class CarritoModel {
                 // 3.2 Disminuir stock
                 // ---------------------------------------------
 
+
+                // 3.2 Descontar el inventario de forma segura.
+                // Si no hay suficientes unidades, no se modifica el stock.
                 const stockResult = await transaction
                     .request()
-                    .input(
-                        'ProductID',
-                        sql.Int,
-                        item.productId
-                    )
-                    .input(
-                        'Cantidad',
-                        sql.Int,
-                        item.cantidad
-                    )
+                    .input('ProductID', sql.Int, item.productId)
+                    .input('Cantidad', sql.Int, item.cantidad)
                     .query(`
                         UPDATE SalesLT.Product
-
                         SET Stock = Stock - @Cantidad
-
+                        OUTPUT INSERTED.ProductID AS ProductID,
+                               INSERTED.Stock AS StockRestante
                         WHERE ProductID = @ProductID
                           AND Stock >= @Cantidad;
-
-                        SELECT @@ROWCOUNT AS FilasActualizadas;
                     `);
+
+                // OUTPUT devuelve una fila solamente si se actualizó
+                // el producto. Si no hay filas, no había suficiente stock.
+                if (stockResult.recordset.length === 0) {
+                    throw new Error(
+                        'Stock insuficiente para el producto ' +
+                        item.productId +
+                        '. Verifica las existencias actuales.'
+                    );
+                }
+
 
                 // ---------------------------------------------
                 // 3.3 Comprobar stock
@@ -340,9 +344,26 @@ class CarritoModel {
             throw error;
         }
     }
+
+    // Método de obtención de stock en carritoModel.js
+    static async obtenerStockProducto(productId) {
+        try {
+            const pool = await obtenerConexion();
+            const result = await pool
+                .request()
+                .input('productId', parseInt(productId))
+                .query(`
+        SELECT ISNULL(Stock, 0) AS Stock
+        FROM SalesLT.Product
+        WHERE ProductID = @productId;
+      `);
+
+            return result.recordset.length > 0 ? result.recordset[0].Stock : 0;
+        } catch (error) {
+            console.error('Error al obtener stock en carritoModel:', error);
+            throw error;
+        }
+    }
 }
 
 module.exports = CarritoModel; 
-
-
-
