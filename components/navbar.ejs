@@ -23,7 +23,15 @@
                 >
                     Catálogo
                 </a>
-            </li>
+            </li> 
+            <li>
+            <a 
+                href="/mis-pedidos" 
+                class="<%= typeof pagina !== 'undefined' && pagina === 'pedidos' ? 'active' : '' %>"
+            >
+                Mis Pedidos
+            </a>
+        </li>
         <% } %>
 
         <!-- Vistas visibles SOLO para TRABAJADOR -->

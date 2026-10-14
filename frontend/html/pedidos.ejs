@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Pedidos - AdventureWorks</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Estilos de la aplicación -->
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/pedidos.css">
+</head>
+<body class="bg-light">
+
+    <!-- Incluir Navbar desde componentes -->
+    <%- include('../../components/navbar', { pagina: 'pedidos' }) %>
+
+    <div class="container my-5">
+        <h2 class="mb-4">Mis Pedidos</h2>
+        <p class="text-muted">Consulta el estado actual de tus compras realizadas.</p>
+
+        <% if (!pedidos || pedidos.length === 0) { %>
+            <div class="alert alert-info text-center my-5">
+                <h4>No tienes pedidos registrados</h4>
+                <p>Explora nuestro catálogo y realiza tu primera compra.</p>
+                <a href="/catalogo" class="btn btn-primary mt-2">Ir al Catálogo</a>
+            </div>
+        <% } else { %>
+            
+            <div class="row">
+                <% pedidos.forEach(pedido => { %>
+                    <div class="col-12 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                                <div>
+                                    <h5 class="mb-0">Pedido #<%= pedido.numeroPedido %></h5>
+                                    <small class="text-muted">
+                                        Fecha: <%= new Date(pedido.fechaPedido).toLocaleDateString('es-CO') %>
+                                    </small>
+                                </div>
+                                <div>
+                                    <% 
+                                        let badgeClass = 'badge-pendiente';
+                                        if (pedido.estadoNombre === 'En proceso') badgeClass = 'badge-en-proceso';
+                                        if (pedido.estadoNombre === 'Despachado') badgeClass = 'badge-despachado';
+                                        if (pedido.estadoNombre === 'Cancelado') badgeClass = 'badge-cancelado';
+                                    %>
+                                    <span class="badge fs-6 <%= badgeClass %>">
+                                        <%= pedido.estadoNombre %>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Código</th>
+                                                <th class="text-center">Cantidad</th>
+                                                <th class="text-end">Precio Unitario</th>
+                                                <th class="text-end">Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% pedido.productos.forEach(prod => { %>
+                                                <tr>
+                                                    <td><strong><%= prod.nombreProducto %></strong></td>
+                                                    <td><code class="text-dark"><%= prod.codigoProducto %></code></td>
+                                                    <td class="text-center"><%= prod.cantidad %></td>
+                                                    <td class="text-end">$<%= prod.precioUnitario %></td>
+                                                    <td class="text-end">$<%= prod.subtotalLinea %></td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="card-footer bg-white d-flex justify-content-end py-3">
+                                <h5>Total: <span class="text-success">$<%= pedido.totalPedido %></span></h5>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+
+        <% } %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+/* frontend/css/pedidos.css */
+
+/* Badges para el estado de los pedidos */
+.badge-pendiente {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-en-proceso {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.badge-despachado {
+    background-color: #198754;
+    color: #fff;
+}
+
+.badge-cancelado {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+/* Estilos adicionales para las tarjetas de pedido */
+.card {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.card-header {
+    border-bottom: 1px solid #eee;
+}
+
+.card-footer {
+    border-top: 1px solid #eee;
+}

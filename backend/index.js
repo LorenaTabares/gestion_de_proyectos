@@ -10,6 +10,7 @@ const CarritoController = require('./controllers/carritoController');
 const InventarioController = require('./controllers/inventarioController');
 const ControladorPerfil = require('./controllers/perfilController');
 const ReportesController = require('./controllers/reportesController');
+const PedidosController = require('./controllers/pedidosController');
 
 const app = express();
 
@@ -91,6 +92,7 @@ app.set('views', path.join(__dirname, '../Frontend/html'));
 // =====================================================
 app.get('/catalogo', requerirCliente, CatalogoController.mostrarCatalogo);
 
+
 // =====================================================
 // RUTAS DE CARRITO (SOLO CLIENTES)
 // =====================================================
@@ -98,6 +100,11 @@ app.get('/carrito', requerirCliente, CarritoController.mostrar);
 app.post('/carrito/agregar', requerirCliente, CarritoController.agregar);
 app.post('/carrito/eliminar', requerirCliente, CarritoController.eliminar);
 app.post('/carrito/finalizar', requerirCliente, CarritoController.finalizarCompra);
+
+// =====================================================
+// RUTA DE MIS PEDIDOS (SOLO CLIENTES)
+// =====================================================
+app.get('/mis-pedidos', requerirCliente, PedidosController.mostrarMisPedidos);
 
 // =====================================================
 // RUTAS DE INVENTARIO (SOLO TRABAJADORES)
