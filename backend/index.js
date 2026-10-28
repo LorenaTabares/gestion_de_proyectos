@@ -11,6 +11,7 @@ const InventarioController = require('./controllers/inventarioController');
 const ControladorPerfil = require('./controllers/perfilController');
 const ReportesController = require('./controllers/reportesController');
 const PedidosController = require('./controllers/pedidosController');
+const UsuariosController = require('./controllers/usuariosController');
 
 const app = express();
 
@@ -51,29 +52,79 @@ const requerirSesion = (req, res, next) => {
     return res.redirect('/login');
 };
 
-// Exclusivo para clientes (Bloquea a trabajadores)
+// ==========================================
+// EXCLUSIVO PARA ADMINISTRADORES
+// ==========================================
+const requerirAdministrador = (req, res, next) => {
+    if (!req.session || !req.session.usuario) {
+        return res.redirect('/login');
+    }
+
+    const rol = (
+        req.session.usuario.Rol ||
+        req.session.usuario.role ||
+        'cliente'
+    ).toLowerCase();
+
+    if (rol !== 'administrador') {
+        return res.status(403).send(
+            'Acceso denegado. Solo los administradores pueden ingresar.'
+        );
+    }
+
+    next();
+};
+
+// ==========================================
+// EXCLUSIVO PARA CLIENTES
+// ==========================================
 const requerirCliente = (req, res, next) => {
     if (!req.session || !req.session.usuario) {
         return res.redirect('/login');
     }
-    const rol = (req.session.usuario.Rol || req.session.usuario.role || 'cliente').toLowerCase();
-    if (rol === 'trabajador') {
+
+    const rol = (
+        req.session.usuario.Rol ||
+        req.session.usuario.role ||
+        'cliente'
+    ).toLowerCase();
+
+    if (rol !== 'cliente') {
+        if (rol === 'administrador') {
+            return res.redirect('/admin/usuarios');
+        }
+
         return res.redirect('/inventario');
     }
+
     next();
 };
 
-// Exclusivo para trabajadores (Bloquea a clientes)
+// ==========================================
+// EXCLUSIVO PARA OPERARIOS DE BODEGA
+// ==========================================
 const requerirTrabajador = (req, res, next) => {
     if (!req.session || !req.session.usuario) {
         return res.redirect('/login');
     }
-    const rol = (req.session.usuario.Rol || req.session.usuario.role || '').toLowerCase();
+
+    const rol = (
+        req.session.usuario.Rol ||
+        req.session.usuario.role ||
+        ''
+    ).toLowerCase();
+
     if (rol !== 'trabajador') {
+        if (rol === 'administrador') {
+            return res.redirect('/admin/usuarios');
+        }
+
         return res.redirect('/catalogo');
     }
+
     next();
 };
+
 
 // =====================================================
 // ARCHIVOS ESTÁTICOS
@@ -143,11 +194,27 @@ app.post('/api/perfil/datos', requerirSesion, ControladorPerfil.actualizarDatosP
 app.post('/api/perfil/password', requerirSesion, ControladorPerfil.cambiarContrasena);
 app.post('/api/perfil/foto', requerirSesion, ControladorPerfil.guardarFotoPerfil);
 
+// ==========================================
+// ADMINISTRACIÓN DE USUARIOS
+// ==========================================
+app.get(
+    '/admin/usuarios',
+    requerirAdministrador,
+    UsuariosController.mostrarUsuarios
+);
+
+app.post(
+    '/admin/usuarios/:id/rol',
+    requerirAdministrador,
+    UsuariosController.actualizarRol
+);
+
 // =====================================================
 // RUTAS DE CATÁLOGO (DETALLE DE PRODUCTO)
 // =====================================================
 app.get('/catalogo', requerirCliente, CatalogoController.mostrarCatalogo);
 app.get('/producto/:id', requerirCliente, CatalogoController.mostrarDetalle); // <-- RUTA NUEVA
+
 
 // =====================================================
 // RUTA PRINCIPAL

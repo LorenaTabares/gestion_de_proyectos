@@ -1,13 +1,19 @@
-// =====================================================
-// ANIMACIONES DEL LOGIN / REGISTRO
-// =====================================================
+
+ // =====================================================
+ // ANIMACIONES DEL LOGIN / REGISTRO
+ // =====================================================
 const container = document.querySelector('.container');
 const btnSignUp = document.querySelector('#btn-sign-up');
 const btnSignIn = document.querySelector('#btn-sign-in');
 
-// Cambia entre el formulario de login y el de registro usando la clase CSS "toggle"
-btnSignUp?.addEventListener('click', () => container?.classList.add('toggle'));
-btnSignIn?.addEventListener('click', () => container?.classList.remove('toggle'));
+// Cambiar entre el formulario de login y el de registro
+btnSignUp?.addEventListener('click', () => {
+    container?.classList.add('toggle');
+});
+
+btnSignIn?.addEventListener('click', () => {
+    container?.classList.remove('toggle');
+});
 
 // =====================================================
 // AUTENTICACIÓN CON EL BACKEND
@@ -53,7 +59,10 @@ if (btnRegistro) {
             });
 
             const resultado = await respuesta.json();
-            mostrarMensaje(resultado.message);
+
+            mostrarMensaje(
+                resultado.message || 'Se completó la solicitud de registro.'
+            );
 
             if (respuesta.ok) {
                 if (nombre) nombre.value = '';
@@ -107,25 +116,37 @@ if (btnLogin) {
             const resultado = await respuesta.json();
 
             if (respuesta.ok) {
-                // 1. Limpiar cualquier resto de sesión o carrito de un usuario anterior
+                // 1. Limpiar los datos locales de un usuario anterior.
                 localStorage.removeItem('carrito');
                 sessionStorage.clear();
 
-                // 2. Guardar los datos del usuario logueado
+                // 2. Obtener y guardar los datos del usuario autenticado.
                 const usuario = resultado.usuario || {};
-                sessionStorage.setItem('usuario', JSON.stringify(usuario));
 
-                // 3. Evaluar el rol (soporta 'Rol' y 'role')
-                const rolUsuario = (usuario.Rol || usuario.role || 'cliente').toLowerCase();
+                sessionStorage.setItem(
+                    'usuario',
+                    JSON.stringify(usuario)
+                );
 
-                // 4. Redireccionar a la vista según el rol
-                if (rolUsuario === 'trabajador') {
+                // 3. Leer el rol y normalizarlo.
+                const rolUsuario = (
+                    usuario.Rol ||
+                    usuario.role ||
+                    'cliente'
+                ).toLowerCase();
+
+                // 4. Redirigir según el rol.
+                if (rolUsuario === 'administrador') {
+                    window.location.assign('/admin/usuarios');
+                } else if (rolUsuario === 'trabajador') {
                     window.location.assign('/inventario');
                 } else {
                     window.location.assign('/catalogo');
                 }
             } else {
-                mostrarMensaje(resultado.message || 'Error al iniciar sesión.');
+                mostrarMensaje(
+                    resultado.message || 'Error al iniciar sesión.'
+                );
             }
         } catch (error) {
             console.error('ERROR DE LOGIN:', error);

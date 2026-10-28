@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Administración de usuarios | AdventureWorks</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/adminUsuarios.css">
+    <link rel="stylesheet" href="../css/footer.css">
+</head>
+
+<body>
+
+    <%- include('../../components/navbar.ejs') %>
+
+        <main class="admin-container">
+
+            <section class="admin-header">
+                <div>
+                    <p class="admin-eyebrow">ADMINISTRACIÓN DEL SISTEMA</p>
+
+                    <h1>Gestión de usuarios</h1>
+
+                    <p class="admin-description">
+                        Consulta los usuarios registrados y administra
+                        sus roles de acceso.
+                    </p>
+                </div>
+
+                <div class="admin-counter">
+                    <span>Usuarios registrados</span>
+                    <strong>
+                        <%= totalUsuarios %>
+                    </strong>
+                    <small>Mostrando los últimos <%= usuarios.length %></small>
+                </div>
+            </section>
+
+            <% if (mensaje) { %>
+                <div class="admin-alert admin-alert-success" role="status">
+                    <%= mensaje %>
+                </div>
+                <% } %>
+
+                    <% if (error) { %>
+                        <div class="admin-alert admin-alert-error" role="alert">
+                            <%= error %>
+                        </div>
+                        <% } %>
+
+                            <section class="admin-table-card">
+
+                                <div class="admin-table-heading">
+                                    <div>
+                                        <h2>Usuarios registrados</h2>
+                                        <p>Selecciona un rol y guarda los cambios.</p>
+                                    </div>
+
+                                    <span class="admin-visible-count">
+                                        <%= usuarios.length %> de <%= totalUsuarios %> usuarios
+                                    </span>
+                                </div>
+
+                                <div class="admin-table-wrapper">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Usuario</th>
+                                                <th>Correo electrónico</th>
+                                                <th>Fecha de registro</th>
+                                                <th>Rol actual</th>
+                                                <th>Acción</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <% if (usuarios.length===0) { %>
+                                                <tr>
+                                                    <td colspan="5" class="empty-state">
+                                                        No hay usuarios registrados.
+                                                    </td>
+                                                </tr>
+                                                <% } %>
+
+                                                    <% usuarios.forEach(usuario=> { %>
+                                                        <% const rolActual=String( usuario.Rol || 'cliente'
+                                                            ).trim().toLowerCase(); const nombreCompleto=[
+                                                            usuario.FirstName, usuario.LastName
+                                                            ].filter(Boolean).join(' ') || ' Usuario'; const
+                                                            fechaRegistro=usuario.FechaRegistro ? new
+                                                            Date(usuario.FechaRegistro) : null; const
+                                                            fechaTexto=fechaRegistro && !isNaN(fechaRegistro.getTime())
+                                                            ? fechaRegistro.toLocaleDateString( 'es-CO' , {
+                                                            day: '2-digit' , month: '2-digit' , year: 'numeric' ,
+                                                            timeZone: 'UTC' } ) : 'No disponible' ; const
+                                                            esUsuarioActual=Number(usuario.CustomerID)===Number(usuarioActualId);
+                                                            %>
+
+                                                            <tr data-user-id="<%= usuario.CustomerID %>">
+
+                                                                <td>
+                                                                    <div class="user-cell">
+
+                                                                        <div class="user-avatar">
+                                                                            <% if (usuario.fotoBase64) { %>
+                                                                                <img src="<%= usuario.fotoBase64 %>"
+                                                                                    alt="Foto de <%= nombreCompleto %>"
+                                                                                    loading="lazy">
+                                                                                <% } else { %>
+                                                                                    <span>
+                                                                                        <%= ( usuario.FirstName || '?'
+                                                                                            ).charAt(0).toUpperCase() %>
+                                                                                    </span>
+                                                                                    <% } %>
+                                                                        </div>
+
+                                                                        <div class="user-name">
+                                                                            <strong>
+                                                                                <%= nombreCompleto %>
+                                                                            </strong>
+                                                                            <small>ID: <%= usuario.CustomerID %></small>
+                                                                        </div>
+
+                                                                    </div>
+                                                                </td>
+
+                                                                <td class="user-email">
+                                                                    <%= usuario.EmailAddress || 'Sin correo' %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <%= fechaTexto %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <span class="role-badge role-<%= rolActual %>"
+                                                                        data-role-label>
+                                                                        <% if (rolActual==='trabajador' ) { %>
+                                                                            Operario de Bodega
+                                                                            <% } else if (rolActual==='administrador' )
+                                                                                { %>
+                                                                                Administrador
+                                                                                <% } else { %>
+                                                                                    Cliente
+                                                                                    <% } %>
+                                                                    </span>
+                                                                </td>
+
+                                                                <td>
+                                                                    <form class="role-form"
+                                                                        data-user-id="<%= usuario.CustomerID %>">
+
+                                                                        <select name="rol" class="role-select"
+                                                                            aria-label="Nuevo rol para <%= nombreCompleto %>"
+                                                                            <%=esUsuarioActual ? 'disabled' : '' %>
+                                                                            >
+                                                                            <option value="cliente"
+                                                                                <%=rolActual==='cliente' ? 'selected'
+                                                                                : '' %>
+                                                                                >
+                                                                                Cliente
+                                                                            </option>
+
+                                                                            <option value="trabajador"
+                                                                                <%=rolActual==='trabajador' ? 'selected'
+                                                                                : '' %>
+                                                                                >
+                                                                                Operario de Bodega
+                                                                            </option>
+
+                                                                            <option value="administrador"
+                                                                                <%=rolActual==='administrador'
+                                                                                ? 'selected' : '' %>
+                                                                                >
+                                                                                Administrador
+                                                                            </option>
+                                                                        </select>
+
+                                                                        <button type="submit" class="btn-save-role"
+                                                                            <%=esUsuarioActual ? 'disabled' : '' %>
+                                                                            >
+                                                                            Guardar
+                                                                        </button>
+
+                                                                    </form>
+                                                                </td>
+
+                                                            </tr>
+                                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <p class="admin-footnote">
+                                    Se muestran los 50 usuarios más recientes.
+                                    Los cambios de rol se guardan en la base de datos.
+                                    Los permisos del usuario se aplicarán al iniciar sesión
+                                    nuevamente, si la autenticación carga el rol actualizado.
+                                </p>
+
+                            </section>
+        </main>
+
+        <script>
+            document.querySelectorAll('.role-form').forEach(form => {
+                const userId = form.dataset.userId;
+                const select = form.querySelector('select');
+                const button = form.querySelector('button');
+                const fila = form.closest('tr');
+                const etiquetaRol = fila.querySelector('[data-role-label]');
+
+                select.dataset.rolAnterior = select.value;
+
+                form.addEventListener('submit', async event => {
+                    event.preventDefault();
+
+                    const rolAnterior = select.dataset.rolAnterior;
+
+                    if (select.value === rolAnterior) {
+                        alert('No has seleccionado un rol diferente.');
+                        return;
+                    }
+
+                    const confirmar = window.confirm(
+                        '¿Deseas guardar el nuevo rol de este usuario?'
+                    );
+
+                    if (!confirmar) {
+                        select.value = rolAnterior;
+                        return;
+                    }
+
+                    button.disabled = true;
+                    select.disabled = true;
+                    button.textContent = 'Guardando...';
+
+                    try {
+                        const respuesta = await fetch(
+                            `/admin/usuarios/${userId}/rol`,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    rol: select.value
+                                })
+                            }
+                        );
+
+                        const resultado = await respuesta.json();
+
+                        if (!respuesta.ok || !resultado.success) {
+                            throw new Error(
+                                resultado.message ||
+                                'No se pudo actualizar el rol.'
+                            );
+                        }
+
+                        const nombresRoles = {
+                            cliente: 'Cliente',
+                            trabajador: 'Operario de Bodega',
+                            administrador: 'Administrador'
+                        };
+
+                        const rolNuevo = String(
+                            resultado.usuario.Rol || 'cliente'
+                        ).toLowerCase();
+
+                        etiquetaRol.textContent =
+                            nombresRoles[rolNuevo] || 'Cliente';
+
+                        etiquetaRol.className =
+                            `role-badge role-${rolNuevo}`;
+
+                        select.value = rolNuevo;
+                        select.dataset.rolAnterior = rolNuevo;
+
+                        alert(resultado.message);
+
+                    } catch (error) {
+                        select.value = rolAnterior;
+
+                        alert(
+                            error.message ||
+                            'Ocurrió un error de conexión.'
+                        );
+
+                    } finally {
+                        button.disabled = false;
+                        select.disabled = false;
+                        button.textContent = 'Guardar';
+                    }
+                });
+            });
+        </script>
+        <!-- FOOTER -->
+        <%- include('../../components/footer.ejs') %>
+</body>
+
+</html>

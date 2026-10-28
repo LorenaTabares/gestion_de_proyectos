@@ -1,0 +1,334 @@
+
+/* ==========================================
+   PANEL DE ADMINISTRACIÓN DE USUARIOS
+========================================== */
+
+.admin-container {
+    width: min(1440px, 94%);
+    margin: 40px auto;
+    color: #243247;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.admin-eyebrow {
+    margin: 0 0 8px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: clamp(25px, 3vw, 34px);
+}
+
+.admin-description {
+    margin: 10px 0 0;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.admin-counter {
+    min-width: 200px;
+    padding: 20px 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.admin-counter span,
+.admin-counter strong,
+.admin-counter small {
+    display: block;
+}
+
+.admin-counter span,
+.admin-counter small {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.admin-counter strong {
+    margin-top: 8px;
+    font-size: 30px;
+}
+
+.admin-counter small {
+    margin-top: 8px;
+}
+
+/* ==========================================
+   TARJETA Y TABLA
+========================================== */
+
+.admin-table-card {
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.05);
+}
+
+.admin-table-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-table-heading h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+.admin-table-heading p {
+    margin: 8px 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.admin-visible-count {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    border-radius: 20px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.admin-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th {
+    padding: 16px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.admin-table td {
+    padding: 17px 16px;
+    border-top: 1px solid #edf0f4;
+    font-size: 14px;
+}
+
+.admin-table tbody tr:hover {
+    background: #fafcff;
+}
+
+/* ==========================================
+   USUARIO Y FOTO DE PERFIL
+========================================== */
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 190px;
+}
+
+.user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #e8efff;
+    color: #284da5;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.user-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-name {
+    min-width: 0;
+}
+
+.user-name strong,
+.user-name small {
+    display: block;
+}
+
+.user-name strong {
+    color: #243247;
+}
+
+.user-name small {
+    margin-top: 4px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.user-email {
+    overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   ROLES
+========================================== */
+
+.role-badge {
+    display: inline-block;
+    padding: 7px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.role-cliente {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.role-trabajador {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.role-administrador {
+    background: #f3e8ff;
+    color: #7e22ce;
+}
+
+/* ==========================================
+   SELECTOR Y BOTÓN
+========================================== */
+
+.role-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 240px;
+}
+
+.role-select {
+    min-width: 155px;
+    max-width: 190px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #334155;
+    font-size: 13px;
+}
+
+.btn-save-role {
+    padding: 10px 13px;
+    border: none;
+    border-radius: 8px;
+    background: #244ba5;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-save-role:hover {
+    background: #193a86;
+}
+
+.btn-save-role:disabled,
+.role-select:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+/* ==========================================
+   ESTADOS VACÍOS Y PIE DE TABLA
+========================================== */
+
+.empty-state {
+    padding: 40px !important;
+    color: #64748b;
+    text-align: center;
+}
+
+.admin-footnote {
+    margin: 0;
+    padding: 18px 24px;
+    border-top: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ==========================================
+   MENSAJES
+========================================== */
+
+.admin-alert {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.admin-alert-success {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.admin-alert-error {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+/* ==========================================
+   ADAPTACIÓN A DISPOSITIVOS PEQUEÑOS
+========================================== */
+
+@media (max-width: 760px) {
+    .admin-container {
+        margin: 24px auto;
+    }
+
+    .admin-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-counter {
+        min-width: 0;
+    }
+
+    .admin-table-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-table {
+        min-width: 1000px;
+    }
+}
