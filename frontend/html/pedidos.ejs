@@ -83,6 +83,18 @@
 
                             <div class="card-footer bg-white d-flex justify-content-end py-3">
                                 <h5>Total: <span class="text-success">$<%= pedido.totalPedido %></span></h5>
+                                <% if (Number(pedido.estadoCodigo) === 1) { %>
+                                    <form
+                                        class="ms-3"
+                                        action="/pedidos/<%= pedido.numeroPedido %>/cancelar"
+                                        method="POST"
+                                        onsubmit="return confirm('¿Confirmas que deseas cancelar este pedido? El stock de sus productos será restituido.');"
+                                    >
+                                        <button type="submit" class="btn btn-outline-danger">
+                                            Cancelar Pedido
+                                        </button>
+                                    </form>
+                                <% } %>
                             </div>
                         </div>
                     </div>
