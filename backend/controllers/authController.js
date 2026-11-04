@@ -128,7 +128,8 @@ class AuthController {
                 passwordSalt: salt
             });
 
-            const rolDefinido = (usuario.Rol || usuario.role || 'cliente').toLowerCase();
+
+            const rolDefinido = 'cliente';
 
             const datosUsuario = {
                 CustomerID: usuario.CustomerID,
@@ -139,8 +140,9 @@ class AuthController {
                 role: rolDefinido
             };
 
-            // Determinar la vista destino según el rol
-            const redirectUrl = rolDefinido === 'trabajador' ? '/inventario' : '/catalogo';
+            // Todo usuario que se registre públicamente entra al catálogo.
+            const redirectUrl = '/catalogo';
+
 
             // Guardar en sesión express e inicializar carrito vacío
             if (req.session) {
@@ -220,12 +222,19 @@ class AuthController {
             };
 
             // Determinar a qué vista enviar al usuario según su rol
-            const redirectUrl = rolDefinido === 'trabajador' ? '/inventario' : '/catalogo';
+
+            const redirectUrl =
+                rolDefinido === 'administrador'
+                    ? '/admin/usuarios'
+                    : rolDefinido === 'trabajador'
+                        ? '/inventario'
+                        : '/catalogo';
+
 
             // GUARDAR USUARIO Y CARGAR SU CARRITO GUARDADO DESDE LA BD
             if (req.session) {
                 req.session.usuario = usuarioAutenticado;
-                
+
                 // Carga los productos guardados previamente en SQL Server
                 const carritoBD = await CarritoModel.obtenerCarritoDeBD(usuario.CustomerID);
                 req.session.carrito = carritoBD || [];
