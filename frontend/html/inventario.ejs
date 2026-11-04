@@ -1,831 +1,309 @@
+
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventario - AdventureWorks</title>
-
     <link rel="stylesheet" href="../css/navbar.css">
     <link rel="stylesheet" href="../css/inventario.css">
     <link rel="stylesheet" href="../css/footer.css">
 
-    <!-- =====================================================
-         CONTROL DE ACCESO FRONTEND
-    ====================================================== -->
     <script>
         (function bloquearAcceso() {
+            const usuarioGuardado = JSON.parse(sessionStorage.getItem('usuario'));
 
-            const usuarioGuardado =
-                JSON.parse(sessionStorage.getItem('usuario'));
-
-            if (
-                !usuarioGuardado ||
-                usuarioGuardado.role !== 'trabajador'
-            ) {
-                alert(
-                    'Acceso denegado: Esta sección es exclusiva para personal de bodega.'
-                );
-
+            if (!usuarioGuardado || usuarioGuardado.role !== 'trabajador') {
+                alert('Acceso denegado: Esta sección es exclusiva para personal de bodega.');
                 window.location.assign('/catalogo');
             }
-
         })();
     </script>
-
 </head>
-
-
 <body>
-
-    <!-- NAVBAR -->
-
     <%- include('../../components/navbar.ejs') %>
 
-
-    <!-- =====================================
-         CONTENIDO
-    ====================================== -->
-
     <main>
-
         <div class="inventario-titulo">
-
             <h1>Inventario de Pedidos</h1>
-
-            <p>
-                Consulta los pedidos y actualiza
-                su estado.
-            </p>
-
+            <p>Consulta los pedidos, las ubicaciones físicas de los productos y actualiza su estado.</p>
         </div>
-
 
         <div class="tablero">
-
-
-            <!-- =================================
-                 PENDIENTES
-            ================================== -->
-
-            <section
-                class="columna columna-pendiente"
-            >
-
-                <h2>
-
-                    Pendiente
-
-                    (<%= pedidosPorEstado.pendiente.length %>)
-
-                </h2>
-
+            <!-- PEDIDOS PENDIENTES -->
+            <section class="columna columna-pendiente">
+                <h2>Pendiente (<%= pedidosPorEstado.pendiente.length %>)</h2>
 
                 <% if (pedidosPorEstado.pendiente.length === 0) { %>
-
-                    <div class="sin-pedidos">
-
-                        No hay pedidos pendientes.
-
-                    </div>
-
+                    <div class="sin-pedidos">No hay pedidos pendientes.</div>
                 <% } %>
-
 
                 <% pedidosPorEstado.pendiente.forEach(pedido => { %>
-
                     <div class="pedido-card">
-
-
                         <div class="pedido-header">
-
-                            <span class="pedido-id">
-
-                                Pedido #<%= pedido.SalesOrderID %>
-
-                            </span>
-
-                            <span class="pedido-fecha">
-
-                                <%= pedido.OrderDate %>
-
-                            </span>
-
+                            <span class="pedido-id">Pedido #<%= pedido.SalesOrderID %></span>
+                            <span class="pedido-fecha"><%= pedido.OrderDate %></span>
                         </div>
 
-
-                        <!-- PRODUCTOS DESPLEGABLE -->
-
-                        <details
-                            class="productos-desplegable"
-                        >
-
-                            <summary>
-
-                                Ver productos
-
-                                (<%= pedido.productos.length %>)
-
-                            </summary>
-
-
+                        <details class="productos-desplegable">
+                            <summary>Ver productos (<%= pedido.productos.length %>)</summary>
                             <div class="lista-productos">
-
-
                                 <% pedido.productos.forEach(producto => { %>
-
                                     <div class="producto">
-
-                                        <div class="producto-nombre">
-
-                                            <%= producto.Name %>
-
-                                        </div>
-
-
+                                        <div class="producto-nombre"><%= producto.Name %></div>
                                         <div class="producto-info">
-
-                                            Código:
-
-                                            <%= producto.ProductNumber %>
-
+                                            Código: <%= producto.ProductNumber %>
                                             &nbsp; | &nbsp;
-
-                                            Cantidad pedida:
-
-                                            <%= producto.OrderQty %>
-
+                                            Cantidad pedida: <%= producto.OrderQty %>
                                         </div>
 
-
-                                        <!-- STOCK RESTANTE -->
-
-                                        <div class="producto-stock
-                                            <%= producto.Stock <= 5
-                                                ? 'stock-rojo'
-                                                : producto.Stock <= 20
-                                                    ? 'stock-amarillo'
-                                                    : producto.Stock <= 50
-                                                        ? 'stock-verde'
-                                                        : '' %>">
-
-                                            Stock restante:
-
-                                            <strong>
-                                                <%= producto.Stock %>
-                                            </strong>
-
-                                            unidades
-
+                                        <div class="producto-stock <%= producto.Stock <= 5 ? 'stock-rojo' : producto.Stock <= 20 ? 'stock-amarillo' : producto.Stock <= 50 ? 'stock-verde' : '' %>">
+                                            Stock restante: <strong><%= producto.Stock %></strong> unidades
                                         </div>
 
+                                        <div class="producto-ubicacion">
+                                            <h4>Ubicación física del producto</h4>
+
+                                            <% if (producto.ubicaciones && producto.ubicaciones.length > 0) { %>
+                                                <% producto.ubicaciones.forEach(ubicacion => { %>
+                                                    <div class="ubicacion-detalle">
+                                                        <p><strong>Zona:</strong> <%= ubicacion.Zona %></p>
+                                                        <p><strong>Pasillo:</strong> <%= ubicacion.Pasillo %></p>
+                                                        <p><strong>Estante:</strong> <%= ubicacion.Estante %></p>
+                                                        <p><strong>Bin / Plataforma:</strong> <%= ubicacion.Bin %></p>
+                                                    </div>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <p>Este producto no tiene una ubicación asignada.</p>
+                                            <% } %>
+                                        </div>
                                     </div>
-
                                 <% }); %>
-
-
                             </div>
-
                         </details>
 
-
-                        <!-- ESTADO SIEMPRE VISIBLE -->
-
                         <div class="pedido-estado">
-
-                            <label>
-
-                                Estado del pedido:
-
-                            </label>
-
-
-                            <form
-                                action="/inventario/estado"
-                                method="POST"
-                            >
-
-                                <input
-                                    type="hidden"
-                                    name="SalesOrderID"
-                                    value="<%= pedido.SalesOrderID %>"
-                                >
-
-
-                                <select
-                                    name="Status"
-                                    class="estado-pedido"
-                                    onchange="this.form.submit()"
-                                >
-
-                                    <option
-                                        value="1"
-                                        selected
-                                    >
-                                        Pendiente
-                                    </option>
-
-                                    <option value="2">
-                                        En proceso
-                                    </option>
-
-                                    <option value="3">
-                                        Despachado
-                                    </option>
-
-                                    <option value="4">
-                                        Cancelado
-                                    </option>
-
+                            <label>Estado del pedido:</label>
+                            <form action="/inventario/estado" method="POST">
+                                <input type="hidden" name="SalesOrderID" value="<%= pedido.SalesOrderID %>">
+                                <select name="Status" class="estado-pedido" onchange="this.form.submit()">
+                                    <option value="1" selected>Pendiente</option>
+                                    <option value="2">En proceso</option>
+                                    <option value="3">Despachado</option>
+                                    <option value="4">Cancelado</option>
                                 </select>
-
                             </form>
-
                         </div>
-
-
                     </div>
-
                 <% }); %>
-
-
             </section>
 
-
-            <!-- =================================
-                 EN PROCESO
-            ================================== -->
-
-            <section
-                class="columna columna-proceso"
-            >
-
-                <h2>
-
-                    En proceso
-
-                    (<%= pedidosPorEstado.proceso.length %>)
-
-                </h2>
-
+            <!-- PEDIDOS EN PROCESO -->
+            <section class="columna columna-proceso">
+                <h2>En proceso (<%= pedidosPorEstado.proceso.length %>)</h2>
 
                 <% if (pedidosPorEstado.proceso.length === 0) { %>
-
-                    <div class="sin-pedidos">
-
-                        No hay pedidos en proceso.
-
-                    </div>
-
+                    <div class="sin-pedidos">No hay pedidos en proceso.</div>
                 <% } %>
-
 
                 <% pedidosPorEstado.proceso.forEach(pedido => { %>
-
                     <div class="pedido-card">
-
-
                         <div class="pedido-header">
-
-                            <span class="pedido-id">
-
-                                Pedido #<%= pedido.SalesOrderID %>
-
-                            </span>
-
-                            <span class="pedido-fecha">
-
-                                <%= pedido.OrderDate %>
-
-                            </span>
-
+                            <span class="pedido-id">Pedido #<%= pedido.SalesOrderID %></span>
+                            <span class="pedido-fecha"><%= pedido.OrderDate %></span>
                         </div>
 
-
-                        <!-- PRODUCTOS DESPLEGABLE -->
-
-                        <details
-                            class="productos-desplegable"
-                        >
-
-                            <summary>
-
-                                Ver productos
-
-                                (<%= pedido.productos.length %>)
-
-                            </summary>
-
-
+                        <details class="productos-desplegable">
+                            <summary>Ver productos (<%= pedido.productos.length %>)</summary>
                             <div class="lista-productos">
-
                                 <% pedido.productos.forEach(producto => { %>
-
                                     <div class="producto">
-
-                                        <div class="producto-nombre">
-
-                                            <%= producto.Name %>
-
-                                        </div>
-
-
+                                        <div class="producto-nombre"><%= producto.Name %></div>
                                         <div class="producto-info">
-
-                                            Código:
-
-                                            <%= producto.ProductNumber %>
-
+                                            Código: <%= producto.ProductNumber %>
                                             &nbsp; | &nbsp;
-
-                                            Cantidad pedida:
-
-                                            <%= producto.OrderQty %>
-
+                                            Cantidad pedida: <%= producto.OrderQty %>
                                         </div>
 
-
-                                        <!-- STOCK RESTANTE -->
-
-                                        <div class="producto-stock
-                                            <%= producto.Stock <= 5
-                                                ? 'stock-rojo'
-                                                : producto.Stock <= 20
-                                                    ? 'stock-amarillo'
-                                                    : producto.Stock <= 50
-                                                        ? 'stock-verde'
-                                                        : '' %>">
-
-                                            Stock restante:
-
-                                            <strong>
-                                                <%= producto.Stock %>
-                                            </strong>
-
-                                            unidades
-
+                                        <div class="producto-stock <%= producto.Stock <= 5 ? 'stock-rojo' : producto.Stock <= 20 ? 'stock-amarillo' : producto.Stock <= 50 ? 'stock-verde' : '' %>">
+                                            Stock restante: <strong><%= producto.Stock %></strong> unidades
                                         </div>
 
+                                        <div class="producto-ubicacion">
+                                            <h4>Ubicación física del producto</h4>
+
+                                            <% if (producto.ubicaciones && producto.ubicaciones.length > 0) { %>
+                                                <% producto.ubicaciones.forEach(ubicacion => { %>
+                                                    <div class="ubicacion-detalle">
+                                                        <p><strong>Zona:</strong> <%= ubicacion.Zona %></p>
+                                                        <p><strong>Pasillo:</strong> <%= ubicacion.Pasillo %></p>
+                                                        <p><strong>Estante:</strong> <%= ubicacion.Estante %></p>
+                                                        <p><strong>Bin / Plataforma:</strong> <%= ubicacion.Bin %></p>
+                                                    </div>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <p>Este producto no tiene una ubicación asignada.</p>
+                                            <% } %>
+                                        </div>
                                     </div>
-
                                 <% }); %>
-
                             </div>
-
                         </details>
 
-
-                        <!-- ESTADO VISIBLE -->
-
                         <div class="pedido-estado">
-
-                            <label>
-
-                                Estado del pedido:
-
-                            </label>
-
-
-                            <form
-                                action="/inventario/estado"
-                                method="POST"
-                            >
-
-                                <input
-                                    type="hidden"
-                                    name="SalesOrderID"
-                                    value="<%= pedido.SalesOrderID %>"
-                                >
-
-
-                                <select
-                                    name="Status"
-                                    class="estado-pedido"
-                                    onchange="this.form.submit()"
-                                >
-
-                                    <option value="1">
-                                        Pendiente
-                                    </option>
-
-                                    <option
-                                        value="2"
-                                        selected
-                                    >
-                                        En proceso
-                                    </option>
-
-                                    <option value="3">
-                                        Despachado
-                                    </option>
-
-                                    <option value="4">
-                                        Cancelado
-                                    </option>
-
+                            <label>Estado del pedido:</label>
+                            <form action="/inventario/estado" method="POST">
+                                <input type="hidden" name="SalesOrderID" value="<%= pedido.SalesOrderID %>">
+                                <select name="Status" class="estado-pedido" onchange="this.form.submit()">
+                                    <option value="1">Pendiente</option>
+                                    <option value="2" selected>En proceso</option>
+                                    <option value="3">Despachado</option>
+                                    <option value="4">Cancelado</option>
                                 </select>
-
                             </form>
-
                         </div>
-
-
                     </div>
-
                 <% }); %>
-
-
             </section>
 
-
-            <!-- =================================
-                 DESPACHADOS
-            ================================== -->
-
-            <section
-                class="columna columna-despachado"
-            >
-
-                <h2>
-
-                    Despachado
-
-                    (<%= pedidosPorEstado.despachado.length %>)
-
-                </h2>
-
+            <!-- PEDIDOS DESPACHADOS -->
+            <section class="columna columna-despachado">
+                <h2>Despachado (<%= pedidosPorEstado.despachado.length %>)</h2>
 
                 <% if (pedidosPorEstado.despachado.length === 0) { %>
-
-                    <div class="sin-pedidos">
-
-                        No hay pedidos despachados.
-
-                    </div>
-
+                    <div class="sin-pedidos">No hay pedidos despachados.</div>
                 <% } %>
-
 
                 <% pedidosPorEstado.despachado.forEach(pedido => { %>
-
                     <div class="pedido-card">
-
-
                         <div class="pedido-header">
-
-                            <span class="pedido-id">
-
-                                Pedido #<%= pedido.SalesOrderID %>
-
-                            </span>
-
-                            <span class="pedido-fecha">
-
-                                <%= pedido.OrderDate %>
-
-                            </span>
-
+                            <span class="pedido-id">Pedido #<%= pedido.SalesOrderID %></span>
+                            <span class="pedido-fecha"><%= pedido.OrderDate %></span>
                         </div>
 
-
-                        <!-- PRODUCTOS DESPLEGABLE -->
-
-                        <details
-                            class="productos-desplegable"
-                        >
-
-                            <summary>
-
-                                Ver productos
-
-                                (<%= pedido.productos.length %>)
-
-                            </summary>
-
-
+                        <details class="productos-desplegable">
+                            <summary>Ver productos (<%= pedido.productos.length %>)</summary>
                             <div class="lista-productos">
-
                                 <% pedido.productos.forEach(producto => { %>
-
                                     <div class="producto">
-
-                                        <div class="producto-nombre">
-
-                                            <%= producto.Name %>
-
-                                        </div>
-
-
+                                        <div class="producto-nombre"><%= producto.Name %></div>
                                         <div class="producto-info">
-
-                                            Código:
-
-                                            <%= producto.ProductNumber %>
-
+                                            Código: <%= producto.ProductNumber %>
                                             &nbsp; | &nbsp;
-
-                                            Cantidad pedida:
-
-                                            <%= producto.OrderQty %>
-
+                                            Cantidad pedida: <%= producto.OrderQty %>
                                         </div>
 
-
-                                        <!-- STOCK RESTANTE -->
-
-                                        <div class="producto-stock
-                                            <%= producto.Stock <= 5
-                                                ? 'stock-rojo'
-                                                : producto.Stock <= 20
-                                                    ? 'stock-amarillo'
-                                                    : producto.Stock <= 50
-                                                        ? 'stock-verde'
-                                                        : '' %>">
-
-                                            Stock restante:
-
-                                            <strong>
-                                                <%= producto.Stock %>
-                                            </strong>
-
-                                            unidades
-
+                                        <div class="producto-stock <%= producto.Stock <= 5 ? 'stock-rojo' : producto.Stock <= 20 ? 'stock-amarillo' : producto.Stock <= 50 ? 'stock-verde' : '' %>">
+                                            Stock restante: <strong><%= producto.Stock %></strong> unidades
                                         </div>
 
+                                        <div class="producto-ubicacion">
+                                            <h4>Ubicación física del producto</h4>
+
+                                            <% if (producto.ubicaciones && producto.ubicaciones.length > 0) { %>
+                                                <% producto.ubicaciones.forEach(ubicacion => { %>
+                                                    <div class="ubicacion-detalle">
+                                                        <p><strong>Zona:</strong> <%= ubicacion.Zona %></p>
+                                                        <p><strong>Pasillo:</strong> <%= ubicacion.Pasillo %></p>
+                                                        <p><strong>Estante:</strong> <%= ubicacion.Estante %></p>
+                                                        <p><strong>Bin / Plataforma:</strong> <%= ubicacion.Bin %></p>
+                                                    </div>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <p>Este producto no tiene una ubicación asignada.</p>
+                                            <% } %>
+                                        </div>
                                     </div>
-
                                 <% }); %>
-
                             </div>
-
                         </details>
 
-
-                        <!-- ESTADO VISIBLE -->
-
                         <div class="pedido-estado">
-
-                            <label>
-
-                                Estado del pedido:
-
-                            </label>
-
-
-                            <form
-                                action="/inventario/estado"
-                                method="POST"
-                            >
-
-                                <input
-                                    type="hidden"
-                                    name="SalesOrderID"
-                                    value="<%= pedido.SalesOrderID %>"
-                                >
-
-
-                                <select
-                                    name="Status"
-                                    class="estado-pedido"
-                                    onchange="this.form.submit()"
-                                >
-
-                                    <option value="1">
-                                        Pendiente
-                                    </option>
-
-                                    <option value="2">
-                                        En proceso
-                                    </option>
-
-                                    <option
-                                        value="3"
-                                        selected
-                                    >
-                                        Despachado
-                                    </option>
-
-                                    <option value="4">
-                                        Cancelado
-                                    </option>
-
+                            <label>Estado del pedido:</label>
+                            <form action="/inventario/estado" method="POST">
+                                <input type="hidden" name="SalesOrderID" value="<%= pedido.SalesOrderID %>">
+                                <select name="Status" class="estado-pedido" onchange="this.form.submit()">
+                                    <option value="1">Pendiente</option>
+                                    <option value="2">En proceso</option>
+                                    <option value="3" selected>Despachado</option>
+                                    <option value="4">Cancelado</option>
                                 </select>
-
                             </form>
-
                         </div>
-
-
                     </div>
-
                 <% }); %>
-
-
             </section>
 
-
-            <!-- =================================
-                 CANCELADOS
-            ================================== -->
-
-            <section
-                class="columna columna-cancelado"
-            >
-
-                <h2>
-
-                    Cancelado
-
-                    (<%= pedidosPorEstado.cancelado.length %>)
-
-                </h2>
-
+            <!-- PEDIDOS CANCELADOS -->
+            <section class="columna columna-cancelado">
+                <h2>Cancelado (<%= pedidosPorEstado.cancelado.length %>)</h2>
 
                 <% if (pedidosPorEstado.cancelado.length === 0) { %>
-
-                    <div class="sin-pedidos">
-
-                        No hay pedidos cancelados.
-
-                    </div>
-
+                    <div class="sin-pedidos">No hay pedidos cancelados.</div>
                 <% } %>
 
-
                 <% pedidosPorEstado.cancelado.forEach(pedido => { %>
-
                     <div class="pedido-card">
-
-
                         <div class="pedido-header">
-
-                            <span class="pedido-id">
-
-                                Pedido #<%= pedido.SalesOrderID %>
-
-                            </span>
-
-                            <span class="pedido-fecha">
-
-                                <%= pedido.OrderDate %>
-
-                            </span>
-
+                            <span class="pedido-id">Pedido #<%= pedido.SalesOrderID %></span>
+                            <span class="pedido-fecha"><%= pedido.OrderDate %></span>
                         </div>
 
-
-                        <!-- PRODUCTOS DESPLEGABLE -->
-
-                        <details
-                            class="productos-desplegable"
-                        >
-
-                            <summary>
-
-                                Ver productos
-
-                                (<%= pedido.productos.length %>)
-
-                            </summary>
-
-
+                        <details class="productos-desplegable">
+                            <summary>Ver productos (<%= pedido.productos.length %>)</summary>
                             <div class="lista-productos">
-
                                 <% pedido.productos.forEach(producto => { %>
-
                                     <div class="producto">
-
-                                        <div class="producto-nombre">
-
-                                            <%= producto.Name %>
-
-                                        </div>
-
-
+                                        <div class="producto-nombre"><%= producto.Name %></div>
                                         <div class="producto-info">
-
-                                            Código:
-
-                                            <%= producto.ProductNumber %>
-
+                                            Código: <%= producto.ProductNumber %>
                                             &nbsp; | &nbsp;
-
-                                            Cantidad pedida:
-
-                                            <%= producto.OrderQty %>
-
+                                            Cantidad pedida: <%= producto.OrderQty %>
                                         </div>
 
-
-                                        <!-- STOCK RESTANTE -->
-
-                                        <div class="producto-stock
-                                            <%= producto.Stock <= 5
-                                                ? 'stock-rojo'
-                                                : producto.Stock <= 20
-                                                    ? 'stock-amarillo'
-                                                    : producto.Stock <= 50
-                                                        ? 'stock-verde'
-                                                        : '' %>">
-
-                                            Stock restante:
-
-                                            <strong>
-                                                <%= producto.Stock %>
-                                            </strong>
-
-                                            unidades
-
+                                        <div class="producto-stock <%= producto.Stock <= 5 ? 'stock-rojo' : producto.Stock <= 20 ? 'stock-amarillo' : producto.Stock <= 50 ? 'stock-verde' : '' %>">
+                                            Stock restante: <strong><%= producto.Stock %></strong> unidades
                                         </div>
 
+                                        <div class="producto-ubicacion">
+                                            <h4>Ubicación física del producto</h4>
+
+                                            <% if (producto.ubicaciones && producto.ubicaciones.length > 0) { %>
+                                                <% producto.ubicaciones.forEach(ubicacion => { %>
+                                                    <div class="ubicacion-detalle">
+                                                        <p><strong>Zona:</strong> <%= ubicacion.Zona %></p>
+                                                        <p><strong>Pasillo:</strong> <%= ubicacion.Pasillo %></p>
+                                                        <p><strong>Estante:</strong> <%= ubicacion.Estante %></p>
+                                                        <p><strong>Bin / Plataforma:</strong> <%= ubicacion.Bin %></p>
+                                                    </div>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <p>Este producto no tiene una ubicación asignada.</p>
+                                            <% } %>
+                                        </div>
                                     </div>
-
                                 <% }); %>
-
                             </div>
-
                         </details>
 
-
-                        <!-- ESTADO VISIBLE -->
-
                         <div class="pedido-estado">
-
-                            <label>
-
-                                Estado del pedido:
-
-                            </label>
-
-
-                            <form
-                                action="/inventario/estado"
-                                method="POST"
-                            >
-
-                                <input
-                                    type="hidden"
-                                    name="SalesOrderID"
-                                    value="<%= pedido.SalesOrderID %>"
-                                >
-
-
-                                <select
-                                    name="Status"
-                                    class="estado-pedido"
-                                    onchange="this.form.submit()"
-                                >
-
-                                    <option value="1">
-                                        Pendiente
-                                    </option>
-
-                                    <option value="2">
-                                        En proceso
-                                    </option>
-
-                                    <option value="3">
-                                        Despachado
-                                    </option>
-
-                                    <option
-                                        value="4"
-                                        selected
-                                    >
-                                        Cancelado
-                                    </option>
-
+                            <label>Estado del pedido:</label>
+                            <form action="/inventario/estado" method="POST">
+                                <input type="hidden" name="SalesOrderID" value="<%= pedido.SalesOrderID %>">
+                                <select name="Status" class="estado-pedido" onchange="this.form.submit()">
+                                    <option value="1">Pendiente</option>
+                                    <option value="2">En proceso</option>
+                                    <option value="3">Despachado</option>
+                                    <option value="4" selected>Cancelado</option>
                                 </select>
-
                             </form>
-
                         </div>
-
-
                     </div>
-
                 <% }); %>
-
-
             </section>
-
-
         </div>
-
     </main>
 
-
-    <!-- FOOTER -->
-
     <%- include('../../components/footer.ejs') %>
-
-
 </body>
-
 </html>
