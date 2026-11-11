@@ -156,6 +156,7 @@ app.post('/carrito/finalizar', requerirCliente, CarritoController.finalizarCompr
 // RUTA DE MIS PEDIDOS (SOLO CLIENTES)
 // =====================================================
 app.get('/mis-pedidos', requerirCliente, PedidosController.mostrarMisPedidos);
+app.post('/pedidos/:salesOrderId/cancelar', requerirCliente, PedidosController.cancelarPedido);
 
 // =====================================================
 // RUTAS DE INVENTARIO (SOLO TRABAJADORES)
