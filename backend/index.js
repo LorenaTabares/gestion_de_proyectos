@@ -13,6 +13,7 @@ const ReportesController = require('./controllers/reportesController');
 const PedidosController = require('./controllers/pedidosController');
 const UsuariosController = require('./controllers/usuariosController');
 
+
 const app = express();
 
 console.log('INDEX.JS EJECUTÁNDOSE CON INTEGRACIÓN COMPLETA');
