@@ -31,13 +31,12 @@
     <!-- PANEL DE FILTROS -->
     <section class="filtros-catalogo-box">
       <form action="/catalogo" method="GET" class="filtros-catalogo-form">
-        
         <div class="filtro-grupo">
           <label for="nombre">Nombre del producto</label>
-          <input 
-            type="text" 
-            id="nombre" 
-            name="nombre" 
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
             placeholder="Ej. Helmet, Bike, Jersey..."
             value="<%= typeof filtros !== 'undefined' ? filtros.nombre : '' %>"
           >
@@ -51,7 +50,7 @@
             </option>
             <% if (typeof categorias !== 'undefined') { %>
               <% categorias.forEach(cat => { %>
-                <option 
+                <option
                   value="<%= cat.ProductCategoryID %>"
                   <%= (typeof filtros !== 'undefined' && String(filtros.categoria) === String(cat.ProductCategoryID)) ? 'selected' : '' %>
                 >
@@ -130,7 +129,7 @@
 
               <div class="card-actions">
                 <a href="/producto/<%= producto.ProductID %>" class="btn-detalles">Ver detalles</a>
-                
+
                 <form action="/carrito/agregar" method="POST" class="form-agregar">
                   <input type="hidden" name="productId" value="<%= producto.ProductID %>">
                   <button type="submit" class="btn-carrito" title="Añadir al carrito">
@@ -152,7 +151,7 @@
       </div>
 
       <!-- PAGINACIÓN CONSERVANDO FILTROS -->
-      <% 
+      <%
         const queryParams = [];
         if (typeof filtros !== 'undefined') {
           if (filtros.nombre) queryParams.push('nombre=' + encodeURIComponent(filtros.nombre));

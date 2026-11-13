@@ -9,15 +9,17 @@
     </div>
 
     <!-- OBTENER EL ROL DEL USUARIO -->
-    <% let rolActual = 'cliente';
+    <%
+        let rolActual = 'cliente';
 
-    if (typeof usuario !== 'undefined' && usuario) {
-        if (usuario.Rol) {
-            rolActual = String(usuario.Rol).toLowerCase();
-        } else if (usuario.role) {
-            rolActual = String(usuario.role).toLowerCase();
+        if (typeof usuario !== 'undefined' && usuario) {
+            if (usuario.Rol) {
+                rolActual = String(usuario.Rol).toLowerCase().trim();
+            } else if (usuario.role) {
+                rolActual = String(usuario.role).toLowerCase().trim();
+            }
         }
-    } %>
+    %>
 
     <!-- ENLACES DE NAVEGACIÓN -->
     <ul class="navbar-links">
@@ -74,6 +76,13 @@
                 <a href="/admin/usuarios"
                     class="<%= typeof pagina !== 'undefined' && pagina === 'admin-usuarios' ? 'active' : '' %>">
                     Administración de usuarios
+                </a>
+            </li>
+
+            <li>
+                <a href="/admin/productos"
+                    class="<%= typeof pagina !== 'undefined' && pagina === 'admin-productos' ? 'active' : '' %>">
+                    Administración de productos
                 </a>
             </li>
 

@@ -149,8 +149,8 @@ class CatalogoModel {
     try {
       const pool = await obtenerConexion();
       const result = await pool.request().query(`
-        SELECT DISTINCT 
-          pc.ProductCategoryID, 
+        SELECT DISTINCT
+          pc.ProductCategoryID,
           pc.Name AS NombreCategoria
         FROM SalesLT.ProductCategory pc
         INNER JOIN SalesLT.Product p ON pc.ProductCategoryID = p.ProductCategoryID

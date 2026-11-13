@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        <%= modo==='crear' ? 'Crear producto' : 'Editar producto' %>
+            | AdventureWorks
+    </title>
+
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/adminProductos.css">
+    <link rel="stylesheet" href="/css/footer.css">
+</head>
+
+<body>
+
+    <%- include('../../components/navbar.ejs') %>
+
+        <main class="producto-form-container">
+
+            <a href="/admin/productos" class="volver-productos">
+                ← Volver a productos
+            </a>
+
+            <section class="producto-form-card">
+
+                <div class="producto-form-heading">
+                    <p class="admin-eyebrow">ADMINISTRACIÓN DEL SISTEMA</p>
+
+                    <h1>
+                        <%= modo==='crear' ? 'Crear producto' : 'Editar producto' %>
+                    </h1>
+
+                    <p>
+                        Completa la información del producto.
+                    </p>
+                </div>
+
+                <% if (error) { %>
+                    <div class="admin-alert admin-alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <form action="<%= modo === 'crear'
+                    ? '/admin/productos/crear'
+                    : '/admin/productos/' + producto.ProductID + '/editar' %>" method="POST"
+                            enctype="multipart/form-data" class="producto-admin-form">
+
+                            <div class="form-field">
+                                <label for="nombre">Nombre del producto</label>
+
+                                <input type="text" id="nombre" name="nombre" maxlength="50" required
+                                    value="<%= producto ? producto.Name : '' %>" placeholder="Ej. Casco de bicicleta">
+                            </div>
+
+                            <div class="form-grid">
+
+                                <div class="form-field">
+                                    <label for="precio">Precio</label>
+
+                                    <input type="number" id="precio" name="precio" min="0" step="0.01" required
+                                        value="<%= producto ? producto.ListPrice : '' %>" placeholder="0.00">
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="stock">Stock</label>
+
+                                    <input type="number" id="stock" name="stock" min="0" step="1" required
+                                        value="<%= producto ? producto.Stock : '' %>" placeholder="Cantidad disponible">
+                                </div>
+
+                            </div>
+
+                            <div class="form-field">
+                                <label for="categoria">Categoría</label>
+
+                                <select id="categoria" name="categoria" required>
+                                    <option value="">Selecciona una categoría</option>
+
+                                    <% categorias.forEach(categoria=> { %>
+                                        <option value="<%= categoria.ProductCategoryID %>" <%=producto &&
+                                            Number(producto.ProductCategoryID)===Number(categoria.ProductCategoryID)
+                                            ? 'selected' : '' %>
+                                            >
+                                            <%= categoria.Name %>
+                                        </option>
+                                        <% }) %>
+
+                                </select>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="imagen">
+                                    Imagen del producto
+                                </label>
+
+                                <% if (producto && producto.imagenUrl) { %>
+                                    <div class="imagen-actual-container">
+                                        <p>Imagen actual:</p>
+
+                                        <img src="<%= producto.imagenUrl %>" alt="Imagen actual del producto"
+                                            class="imagen-actual" id="imagen-preview">
+                                    </div>
+                                    <% } else { %>
+                                        <img src="" alt="Vista previa" class="imagen-actual imagen-preview-oculta"
+                                            id="imagen-preview">
+                                        <% } %>
+
+                                            <input type="file" id="imagen" name="imagen"
+                                                accept="image/jpeg,image/png,image/webp" <%=modo==='crear' ? 'required'
+                                                : '' %>
+                                            >
+
+                                            <small>
+                                                Formatos permitidos: JPG, JPEG, PNG y WEBP.
+                                                Tamaño máximo: 5 MB.
+                                                <%= modo==='editar'
+                                                    ? 'Si no seleccionas otra imagen, se conservará la actual.' : '' %>
+                                            </small>
+                            </div>
+
+                            <div class="producto-form-actions">
+
+                                <a href="/admin/productos" class="btn-cancelar-producto">
+                                    Cancelar
+                                </a>
+
+                                <button type="submit" class="btn-guardar-producto">
+                                    <%= modo==='crear' ? 'Crear producto' : 'Guardar cambios' %>
+                                </button>
+
+                            </div>
+
+                        </form>
+
+            </section>
+
+        </main>
+
+        <%- include('../../components/footer.ejs') %>
+
+            <script>
+                const inputImagen = document.getElementById('imagen');
+                const imagenPreview = document.getElementById('imagen-preview');
+
+                inputImagen.addEventListener('change', function () {
+
+                    const archivo = this.files[0];
+
+                    if (!archivo) {
+                        return;
+                    }
+
+                    const tiposPermitidos = [
+                        'image/jpeg',
+                        'image/png',
+                        'image/webp'
+                    ];
+
+                    if (!tiposPermitidos.includes(archivo.type)) {
+                        alert('Selecciona una imagen JPG, JPEG, PNG o WEBP.');
+                        this.value = '';
+                        return;
+                    }
+
+                    if (archivo.size > 5 * 1024 * 1024) {
+                        alert('La imagen no puede superar los 5 MB.');
+                        this.value = '';
+                        return;
+                    }
+
+                    imagenPreview.src = URL.createObjectURL(archivo);
+                    imagenPreview.classList.remove('imagen-preview-oculta');
+                });
+            </script>
+
+</body>
+
+</html>
