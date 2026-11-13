@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard Administrativo</title>
+
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <%- include('../../components/navbar') %>
+     
+
+    <main class="dashboard">
+
+        <!-- ENCABEZADO -->
+        <header class="encabezado">
+            <div>
+                <h1>Dashboard Administrativo</h1>
+                <p>Resumen general del estado del negocio</p>
+            </div>
+
+            
+        </header>
+
+        <!-- MENSAJE DE ERROR -->
+        <% if (typeof errorCarga !== 'undefined' && errorCarga) { %>
+            <p class="mensaje-error">
+                No fue posible cargar los datos del dashboard.
+                Revisa la conexión con la base de datos.
+            </p>
+        <% } %>
+
+        <!-- TARJETAS -->
+        <section class="tarjetas">
+
+            <article class="tarjeta">
+                <div class="icono productos">📦</div>
+                <div>
+                    <p>Total de productos</p>
+                    <h2><%= totalProductos || 0 %></h2>
+                </div>
+            </article>
+
+            <article class="tarjeta">
+                <div class="icono clientes">👥</div>
+                <div>
+                    <p>Total de clientes</p>
+                    <h2><%= totalClientes || 0 %></h2>
+                </div>
+            </article>
+
+            <article class="tarjeta">
+                <div class="icono pedidos">🛒</div>
+                <div>
+                    <p>Total de pedidos</p>
+                    <h2><%= totalPedidos || 0 %></h2>
+                </div>
+            </article>
+
+            <article class="tarjeta">
+                <div class="icono ingresos">💰</div>
+                <div>
+                    <p>Ingresos por ventas</p>
+                    <h2>
+                        $<%= Number(ingresosTotales || 0).toLocaleString('es-CO', {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2
+                        }) %>
+                    </h2>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- GRÁFICOS -->
+        <section class="graficos">
+
+            <!-- PRODUCTOS MÁS VENDIDOS -->
+            <article class="grafico-card">
+
+                <h2>Productos más vendidos</h2>
+                <p>Los cinco productos con mayores ventas</p>
+
+                <div class="grafico-contenedor">
+                    <canvas
+                        id="graficoProductos"
+                        data-productos='<%= JSON.stringify(productosMasVendidos || []) %>'>
+                    </canvas>
+                </div>
+
+            </article>
+
+            <!-- PEDIDOS POR ESTADO -->
+            <article class="grafico-card">
+
+                <h2>Pedidos por estado</h2>
+                <p>Cantidad de pedidos según su estado</p>
+
+                <div class="grafico-contenedor">
+                    <canvas
+                        id="graficoPedidos"
+                        data-pedidos='<%= JSON.stringify(pedidosPorEstado || []) %>'>
+                    </canvas>
+                </div>
+
+            </article>
+
+        </section>
+
+    </main>
+
+    <!-- JAVASCRIPT DE LOS GRÁFICOS -->
+    <script>
+
+        // OBTENER LOS DATOS
+        const productos = JSON.parse(
+            document.getElementById('graficoProductos').dataset.productos
+        );
+
+        const pedidos = JSON.parse(
+            document.getElementById('graficoPedidos').dataset.pedidos
+        );
+
+        // VERIFICAR CHART.JS
+        if (typeof Chart === 'undefined') {
+
+            console.error('No se pudo cargar Chart.js');
+
+        } else {
+
+            // GRÁFICO DE PRODUCTOS MÁS VENDIDOS
+            const contextoProductos = document
+                .getElementById('graficoProductos')
+                .getContext('2d');
+
+            new Chart(contextoProductos, {
+
+                type: 'bar',
+
+                data: {
+                    labels: productos.map(p => p.NombreProducto),
+
+                    datasets: [{
+                        label: 'Unidades vendidas',
+                        data: productos.map(p => Number(p.CantidadVendida)),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+
+            });
+
+            // NOMBRES DE LOS ESTADOS
+            const nombresEstados = {
+                1: 'En proceso',
+                2: 'Pendiente',
+                3: 'Despachado',
+                4: 'Cancelado',
+                5: 'Estado 5'
+            };
+
+            // GRÁFICO DE PEDIDOS POR ESTADO
+            const contextoPedidos = document
+                .getElementById('graficoPedidos')
+                .getContext('2d');
+
+            new Chart(contextoPedidos, {
+
+                type: 'bar',
+
+                data: {
+                    labels: pedidos.map(p =>
+                        nombresEstados[p.Status] || `Estado ${p.Status}`
+                    ),
+
+                    datasets: [{
+                        label: 'Cantidad de pedidos',
+                        data: pedidos.map(p => Number(p.TotalPedidos)),
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+
+            });
+
+        }
+
+    </script>
+
+</body>
+</html>

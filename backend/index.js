@@ -12,6 +12,7 @@ const ControladorPerfil = require('./controllers/perfilController');
 const ReportesController = require('./controllers/reportesController');
 const PedidosController = require('./controllers/pedidosController');
 const UsuariosController = require('./controllers/usuariosController');
+const DashboardController = require('./controllers/dashboardController');
 
 const app = express();
 
@@ -195,6 +196,14 @@ app.post('/api/perfil/datos', requerirSesion, ControladorPerfil.actualizarDatosP
 app.post('/api/perfil/password', requerirSesion, ControladorPerfil.cambiarContrasena);
 app.post('/api/perfil/foto', requerirSesion, ControladorPerfil.guardarFotoPerfil);
 
+// ==========================================
+// DASHBOARD ADMINISTRATIVO
+// ==========================================
+app.get(
+    '/admin/dashboard',
+    requerirAdministrador,
+    DashboardController.mostrarDashboard
+);
 // ==========================================
 // ADMINISTRACIÓN DE USUARIOS
 // ==========================================

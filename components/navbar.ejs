@@ -75,6 +75,15 @@
 
             <li>
                 <a
+                    href="/admin/dashboard"
+                    class="<%= typeof pagina !== 'undefined' && pagina === 'dashboard' ? 'active' : '' %>"
+                >
+                    Dashboard
+                </a>
+            </li>
+
+            <li>
+                <a
                     href="/admin/usuarios"
                     class="<%= typeof pagina !== 'undefined' && pagina === 'admin-usuarios' ? 'active' : '' %>"
                 >
