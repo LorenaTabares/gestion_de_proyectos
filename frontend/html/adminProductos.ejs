@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Administración de productos | AdventureWorks</title>
+
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/adminProductos.css">
+    <link rel="stylesheet" href="/css/footer.css">
+</head>
+<body>
+
+    <%- include('../../components/navbar.ejs') %>
+
+    <main class="productos-admin-container">
+
+        <section class="productos-admin-header">
+            <div>
+                <p class="admin-eyebrow">ADMINISTRACIÓN DEL SISTEMA</p>
+                <h1>Gestión de productos</h1>
+                <p class="admin-description">
+                    Consulta, crea, modifica y elimina los productos del sistema.
+                </p>
+            </div>
+
+            <a href="/admin/productos/nuevo" class="btn-crear-producto">
+                + Crear producto
+            </a>
+        </section>
+
+        <% if (mensaje) { %>
+            <div class="admin-alert admin-alert-success" role="status">
+                <%= mensaje %>
+            </div>
+        <% } %>
+
+        <% if (error) { %>
+            <div class="admin-alert admin-alert-error" role="alert">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <section class="productos-admin-card">
+
+            <div class="productos-admin-heading">
+                <div>
+                    <h2>Productos registrados</h2>
+                    <p>
+                        <%= productos.length %>
+                        producto(s) disponibles para administrar.
+                    </p>
+                </div>
+            </div>
+
+            <div class="productos-admin-table-wrapper">
+
+                <table class="productos-admin-table">
+
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Categoría</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <% if (productos.length === 0) { %>
+                            <tr>
+                                <td colspan="5" class="productos-empty">
+                                    No hay productos registrados
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% productos.forEach(producto => { %>
+
+                            <tr>
+
+                                <td>
+                                    <div class="producto-admin-cell">
+
+                                        <% if (producto.imagenUrl) { %>
+                                            <img
+                                                src="<%= producto.imagenUrl %>"
+                                                alt="<%= producto.Name %>"
+                                                class="producto-admin-imagen"
+                                            >
+                                        <% } else { %>
+                                            <div class="producto-admin-sin-imagen">
+                                                Sin imagen
+                                            </div>
+                                        <% } %>
+
+                                        <div class="producto-admin-info">
+                                            <strong><%= producto.Name %></strong>
+                                            <small>ID: <%= producto.ProductID %></small>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    $<%= Number(producto.ListPrice || 0).toLocaleString('es-CO') %>
+                                </td>
+
+                                <td>
+                                    <span class="stock-admin">
+                                        <%= producto.Stock %>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <%= producto.CategoryName || 'Sin categoría' %>
+                                </td>
+
+                                <td>
+                                    <div class="producto-admin-acciones">
+
+                                        <a
+                                            href="/admin/productos/<%= producto.ProductID %>/editar"
+                                            class="btn-editar-producto"
+                                        >
+                                            Editar
+                                        </a>
+
+                                        <form
+                                            action="/admin/productos/<%= producto.ProductID %>/eliminar"
+                                            method="POST"
+                                            class="form-eliminar-producto"
+                                            onsubmit="return confirm('¿Estás seguro de que deseas eliminar este producto?');"
+                                        >
+                                            <button
+                                                type="submit"
+                                                class="btn-eliminar-producto"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                        <% }) %>
+
+                    </tbody>
+                </table>
+
+            </div>
+
+            <p class="productos-admin-footnote">
+                Los cambios realizados se guardan directamente en la base de datos.
+            </p>
+
+        </section>
+
+    </main>
+
+    <%- include('../../components/footer.ejs') %>
+
+</body>
+</html>
