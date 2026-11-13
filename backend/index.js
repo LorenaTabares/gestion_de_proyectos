@@ -14,6 +14,7 @@ const PedidosController = require('./controllers/pedidosController');
 const UsuariosController = require('./controllers/usuariosController');
 const DashboardController = require('./controllers/dashboardController');
 
+
 const app = express();
 
 console.log('INDEX.JS EJECUTÁNDOSE CON INTEGRACIÓN COMPLETA');
