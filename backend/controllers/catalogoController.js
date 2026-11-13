@@ -535,119 +535,62 @@ class CatalogoController {
   // MOSTRAR CATÁLOGO
   // =====================================================
 
+  // =====================================================
+  // MOSTRAR CATÁLOGO (CON FILTROS Y PAGINACIÓN)
+  // =====================================================
   static async mostrarCatalogo(req, res) {
-
     try {
+      // Parámetros de filtro
+      const nombre = req.query.nombre || '';
+      const categoria = req.query.categoria || 'todas';
+      const orden = req.query.orden || '';
 
-
-      // ---------------------------------------------------
-      // PAGINACIÓN
-      // ---------------------------------------------------
-
+      // Paginación
       const limite = 9;
+      const paginaActual = parseInt(req.query.pagina) || 1;
+      const offset = (paginaActual - 1) * limite;
 
-
-      const paginaActual =
-        parseInt(req.query.pagina) || 1;
-
-
-      const offset =
-        (paginaActual - 1) * limite;
-
-
-      // ---------------------------------------------------
-      // TOTAL DE PRODUCTOS
-      // ---------------------------------------------------
-
-      const totalProductos =
-        await CatalogoModel.obtenerTotalProductos();
-
-
-      // ---------------------------------------------------
-      // PRODUCTOS
-      // ---------------------------------------------------
-
-      const productosRaw =
-        await CatalogoModel.obtenerProductosPaginados(
-
+      // Consultar categorías y productos filtrados en paralelo
+      const [categorias, { productosRaw, totalProductos }] = await Promise.all([
+        CatalogoModel.obtenerCategorias(),
+        CatalogoModel.obtenerProductosFiltrados({
+          nombre,
+          categoria,
+          orden,
           offset,
-
           limite
+        })
+      ]);
 
-        );
+      const totalPaginas = Math.ceil(totalProductos / limite) || 1;
 
-
-      // ---------------------------------------------------
-      // TOTAL DE PÁGINAS
-      // ---------------------------------------------------
-
-      const totalPaginas =
-        Math.ceil(
-          totalProductos / limite
-        );
-
-
-      // ---------------------------------------------------
-      // OBTENER IMÁGENES
-      // ---------------------------------------------------
-
-      const productos =
-        await Promise.all(
-
-          productosRaw.map(
-            async producto => ({
-
-              ...producto,
-
-              imagenUrl:
-                await CatalogoController
-                  .obtenerImagenProducto(
-                    producto
-                  )
-
-            })
-          )
-
-        );
-
-
-      // ---------------------------------------------------
-      // RENDER
-      // ---------------------------------------------------
-
-      res.render(
-        'catalogo',
-        {
-
-          productos,
-
-          paginaActual,
-
-          totalPaginas,
-
-          pagina: 'catalogo'
-
-        }
+      // Obtener imágenes igual que antes
+      const productos = await Promise.all(
+        productosRaw.map(async producto => ({
+          ...producto,
+          imagenUrl: await CatalogoController.obtenerImagenProducto(producto)
+        }))
       );
 
+      res.render('catalogo', {
+        productos,
+        categorias,
+        filtros: {
+          nombre,
+          categoria,
+          orden
+        },
+        paginaActual,
+        totalPaginas,
+        pagina: 'catalogo'
+      });
 
     } catch (error) {
-
-      console.error(
-        '--- ERROR EN MOSTRAR CATALOGO ---'
-      );
-
+      console.error('--- ERROR EN MOSTRAR CATALOGO ---');
       console.error(error);
-
-
-      res.status(500).send(
-        'Error al cargar el catálogo.'
-      );
-
+      res.status(500).send('Error al cargar el catálogo.');
     }
-
   }
-
   // =====================================================
   // MOSTRAR DETALLES DEL PRODUCTO
   // =====================================================

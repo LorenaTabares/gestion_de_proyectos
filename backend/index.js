@@ -16,6 +16,7 @@ const PedidosController = require('./controllers/pedidosController');
 const UsuariosController = require('./controllers/usuariosController');
 const ProductosAdminController = require('./controllers/productosAdminController');
 
+
 const app = express();
 
 console.log('INDEX.JS EJECUTÁNDOSE CON INTEGRACIÓN COMPLETA');
@@ -269,6 +270,8 @@ app.get(
     requerirCliente,
     PedidosController.mostrarMisPedidos
 );
+app.get('/mis-pedidos', requerirCliente, PedidosController.mostrarMisPedidos);
+app.post('/pedidos/:salesOrderId/cancelar', requerirCliente, PedidosController.cancelarPedido);
 
 // =====================================================
 // RUTAS DE INVENTARIO (SOLO TRABAJADORES)

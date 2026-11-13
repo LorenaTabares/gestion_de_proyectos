@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/navbar.css">
   <link rel="stylesheet" href="/css/catalogo.css">
+  <link rel="stylesheet" href="/css/filtroCatalogo.css">
   <link rel="stylesheet" href="/css/footer.css">
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,87 +28,160 @@
       <p>Explora la lista de productos disponibles en el sistema.</p>
     </header>
 
-    <!-- PRODUCTOS -->
-    <div class="grid-productos">
+    <!-- PANEL DE FILTROS -->
+    <section class="filtros-catalogo-box">
+      <form action="/catalogo" method="GET" class="filtros-catalogo-form">
+        <div class="filtro-grupo">
+          <label for="nombre">Nombre del producto</label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            placeholder="Ej. Helmet, Bike, Jersey..."
+            value="<%= typeof filtros !== 'undefined' ? filtros.nombre : '' %>"
+          >
+        </div>
 
-      <% productos.forEach(producto => { %>
-
-        <article class="card-producto">
-
-          <!-- IMAGEN -->
-          <div class="card-img-container">
-            <% if (producto.imagenUrl) { %>
-              <img src="<%= producto.imagenUrl %>" alt="<%= producto.Name %>" class="product-img" loading="lazy">
-            <% } else { %>
-              <div class="producto-sin-imagen">
-                <span>Sin fotografía</span>
-              </div>
+        <div class="filtro-grupo">
+          <label for="categoria">Categoría</label>
+          <select id="categoria" name="categoria">
+            <option value="todas" <%= (typeof filtros === 'undefined' || filtros.categoria === 'todas') ? 'selected' : '' %>>
+              Todas
+            </option>
+            <% if (typeof categorias !== 'undefined') { %>
+              <% categorias.forEach(cat => { %>
+                <option
+                  value="<%= cat.ProductCategoryID %>"
+                  <%= (typeof filtros !== 'undefined' && String(filtros.categoria) === String(cat.ProductCategoryID)) ? 'selected' : '' %>
+                >
+                  <%= cat.NombreCategoria %>
+                </option>
+              <% }); %>
             <% } %>
-          </div>
+          </select>
+        </div>
 
-          <!-- CABECERA -->
-          <div class="card-header">
-            <span class="product-id">ID: #<%= producto.ProductID %></span>
-            <span class="product-color"><%= producto.Color || 'Sin color' %></span>
-          </div>
+        <div class="filtro-grupo">
+          <label for="orden">Ordenar por</label>
+          <select id="orden" name="orden">
+            <option value="" <%= (typeof filtros === 'undefined' || filtros.orden === '') ? 'selected' : '' %>>
+              Por defecto
+            </option>
+            <option value="precio_desc" <%= (typeof filtros !== 'undefined' && filtros.orden === 'precio_desc') ? 'selected' : '' %>>
+              Precio: Mayor a menor
+            </option>
+          </select>
+        </div>
 
-          <!-- INFORMACIÓN -->
-          <div class="card-body">
-            <h3 class="product-title"><%= producto.Name %></h3>
-            <p class="product-code">
-              <strong>Código:</strong> <%= producto.ProductNumber %>
-            </p>
-          </div>
+        <div class="filtro-botones">
+          <button type="submit" class="btn-filtrar">Filtrar</button>
+          <a href="/catalogo" class="btn-limpiar">Limpiar</a>
+        </div>
 
-          <!-- PRECIO Y ACCIONES -->
-          <div class="card-footer">
-            <span class="product-price">
-              $<%= Number(producto.ListPrice).toFixed(2) %>
-            </span>
+      </form>
+    </section>
 
-            <div class="card-actions">
-              <a href="/producto/<%= producto.ProductID %>" class="btn-detalles">Ver detalles</a>
-              
-              <form action="/carrito/agregar" method="POST" class="form-agregar">
-                <input type="hidden" name="productId" value="<%= producto.ProductID %>">
-                <button type="submit" class="btn-carrito" title="Añadir al carrito">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="8" cy="21" r="1"></circle>
-                    <circle cx="19" cy="21" r="1"></circle>
-                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
-                  </svg>
-                  <span>Añadir</span>
-                </button>
-              </form>
+    <!-- PRODUCTOS O MENSAJE DE VACÍO -->
+    <% if (!productos || productos.length === 0) { %>
+      <div class="sin-resultados-box">
+        <h3>No se encontraron productos</h3>
+        <p>No hay productos que coincidan con los filtros seleccionados.</p>
+        <a href="/catalogo" class="btn-limpiar">Limpiar filtros</a>
+      </div>
+    <% } else { %>
+
+      <div class="grid-productos">
+
+        <% productos.forEach(producto => { %>
+
+          <article class="card-producto">
+
+            <!-- IMAGEN -->
+            <div class="card-img-container">
+              <% if (producto.imagenUrl) { %>
+                <img src="<%= producto.imagenUrl %>" alt="<%= producto.Name %>" class="product-img" loading="lazy">
+              <% } else { %>
+                <div class="producto-sin-imagen">
+                  <span>Sin fotografía</span>
+                </div>
+              <% } %>
             </div>
-          </div>
 
-        </article>
+            <!-- CABECERA -->
+            <div class="card-header">
+              <span class="product-id">ID: #<%= producto.ProductID %></span>
+              <span class="product-color"><%= producto.Color || 'Sin color' %></span>
+            </div>
 
-      <% }); %>
+            <!-- INFORMACIÓN -->
+            <div class="card-body">
+              <h3 class="product-title"><%= producto.Name %></h3>
+              <p class="product-code">
+                <strong>Código:</strong> <%= producto.ProductNumber %>
+              </p>
+            </div>
 
-    </div>
+            <!-- PRECIO Y ACCIONES -->
+            <div class="card-footer">
+              <span class="product-price">
+                $<%= Number(producto.ListPrice).toFixed(2) %>
+              </span>
 
-    <!-- PAGINACIÓN -->
-    <div class="paginacion-container">
+              <div class="card-actions">
+                <a href="/producto/<%= producto.ProductID %>" class="btn-detalles">Ver detalles</a>
 
-      <% if (paginaActual > 1) { %>
-        <a href="/catalogo?pagina=<%= paginaActual - 1 %>" class="btn-pagina">&laquo; Anterior</a>
-      <% } else { %>
-        <span class="btn-pagina deshabilitado">&laquo; Anterior</span>
-      <% } %>
+                <form action="/carrito/agregar" method="POST" class="form-agregar">
+                  <input type="hidden" name="productId" value="<%= producto.ProductID %>">
+                  <button type="submit" class="btn-carrito" title="Añadir al carrito">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="8" cy="21" r="1"></circle>
+                      <circle cx="19" cy="21" r="1"></circle>
+                      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                    </svg>
+                    <span>Añadir</span>
+                  </button>
+                </form>
+              </div>
+            </div>
 
-      <span class="pagina-info">
-        Página <strong><%= paginaActual %></strong> de <strong><%= totalPaginas %></strong>
-      </span>
+          </article>
 
-      <% if (paginaActual < totalPaginas) { %>
-        <a href="/catalogo?pagina=<%= paginaActual + 1 %>" class="btn-pagina">Siguiente &raquo;</a>
-      <% } else { %>
-        <span class="btn-pagina deshabilitado">Siguiente &raquo;</span>
-      <% } %>
+        <% }); %>
 
-    </div>
+      </div>
+
+      <!-- PAGINACIÓN CONSERVANDO FILTROS -->
+      <%
+        const queryParams = [];
+        if (typeof filtros !== 'undefined') {
+          if (filtros.nombre) queryParams.push('nombre=' + encodeURIComponent(filtros.nombre));
+          if (filtros.categoria && filtros.categoria !== 'todas') queryParams.push('categoria=' + encodeURIComponent(filtros.categoria));
+          if (filtros.orden) queryParams.push('orden=' + encodeURIComponent(filtros.orden));
+        }
+        const extraQuery = queryParams.length > 0 ? '&' + queryParams.join('&') : '';
+      %>
+
+      <div class="paginacion-container">
+
+        <% if (paginaActual > 1) { %>
+          <a href="/catalogo?pagina=<%= paginaActual - 1 %><%= extraQuery %>" class="btn-pagina">&laquo; Anterior</a>
+        <% } else { %>
+          <span class="btn-pagina deshabilitado">&laquo; Anterior</span>
+        <% } %>
+
+        <span class="pagina-info">
+          Página <strong><%= paginaActual %></strong> de <strong><%= totalPaginas %></strong>
+        </span>
+
+        <% if (paginaActual < totalPaginas) { %>
+          <a href="/catalogo?pagina=<%= paginaActual + 1 %><%= extraQuery %>" class="btn-pagina">Siguiente &raquo;</a>
+        <% } else { %>
+          <span class="btn-pagina deshabilitado">Siguiente &raquo;</span>
+        <% } %>
+
+      </div>
+
+    <% } %>
 
   </main>
 
